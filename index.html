@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>🏠 Bei Family</title>
+
+<!-- ============================================================
+     PWA — manifeste, couleurs, icônes
+     ============================================================ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF8C6B">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bei Family">
+
+<style>
+/* ============================================================
+   TOKENS — palette "foyer chaleureux", partagée par tout le portail
+   ============================================================ */
+:root{
+  --cream:        #FFF8ED;
+  --paper:        #FFFFFF;
+  --ink:          #3A2E39;
+  --ink-soft:     #7A6B78;
+  --coral:        #FF8C6B;
+  --coral-deep:   #E96A48;
+  --gold:         #F4C95D;
+  --sage:         #8FAE8B;
+  --lavender:     #C9AEE4;
+  --sky:          #9AC7D9;
+  --line:         #F0E4D3;
+  --shadow:       0 8px 24px rgba(58,46,57,0.08);
+  --shadow-lift:  0 14px 34px rgba(58,46,57,0.14);
+  --radius:       18px;
+  --radius-sm:    12px;
+  --nav-height:   72px;
+  --font-display: "Segoe UI Rounded", ui-rounded, "SF Pro Rounded", "Century Gothic", var(--font-body);
+  --font-body:    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background: radial-gradient(circle at 10% -10%, #FFEFD6 0%, var(--cream) 45%) fixed;
+  color:var(--ink);
+  font-family:var(--font-body);
+  line-height:1.5;
+  min-height:100vh;
+}
+button{ font-family:inherit; }
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+}
+@keyframes pop-in{ from{ opacity:0; transform:translateY(10px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+/* ---------- écran de connexion ---------- */
+.auth-screen{
+  position:fixed; inset:0; z-index:150;
+  display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(circle at 10% -10%, #FFEFD6 0%, var(--cream) 45%);
+  padding:24px;
+}
+.auth-card{
+  background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow-lift);
+  max-width:440px; width:100%; padding:44px 32px; text-align:center;
+  animation:pop-in .35s ease both;
+}
+.hero-eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-display); font-weight:700; font-size:0.8rem;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--coral-deep);
+  background:#FFE4D6; padding:6px 14px; border-radius:999px;
+}
+.auth-card h1{ font-family:var(--font-display); font-size:1.8rem; margin:14px 0 8px; font-weight:800; }
+.auth-card p{ color:var(--ink-soft); margin:0 0 22px; }
+.auth-message{ margin-top:16px; font-weight:700; color:#A93636; min-height:20px; font-size:0.9rem; }
+
+.big-btn{
+  font-family:var(--font-display); font-size:1.1rem; font-weight:800; color:#fff;
+  background:linear-gradient(135deg, var(--coral), var(--coral-deep));
+  border:none; padding:18px 34px; border-radius:999px; cursor:pointer;
+  box-shadow:var(--shadow-lift); transition:transform .18s ease, box-shadow .18s ease;
+}
+.big-btn:hover{ transform:translateY(-3px) scale(1.02); box-shadow:0 20px 40px rgba(233,106,72,0.28); }
+.big-btn:active{ transform:translateY(0) scale(0.98); }
+
+/* ---------- barre utilisateur ---------- */
+.user-bar{
+  position:fixed; top:14px; right:14px; z-index:60;
+  display:flex; align-items:center; gap:10px;
+  background:var(--paper); padding:8px 10px 8px 16px; border-radius:999px;
+  box-shadow:var(--shadow); font-size:0.82rem;
+}
+.user-email{ color:var(--ink-soft); font-weight:600; max-width:38vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ghost-btn{
+  border:1px solid var(--line); background:var(--paper); color:var(--ink);
+  padding:7px 13px; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
+}
+.ghost-btn:hover{ background:#FFF3E8; border-color:var(--coral); }
+@media (max-width:640px){
+  .user-bar{ position:static; margin:12px auto 0; width:fit-content; }
+}
+
+/* ---------- coquille de l'application ---------- */
+#appShell{ padding-bottom:calc(var(--nav-height) + 18px + env(safe-area-inset-bottom)); }
+.view-container{ max-width:1000px; margin:0 auto; padding:18px 20px 10px; }
+.view[hidden]{ display:none; }
+
+/* ---------- tableau de bord ---------- */
+.qg-hero{ text-align:center; padding:18px 6px 8px; }
+.qg-hero h1{ font-family:var(--font-display); font-size:clamp(1.6rem, 4vw, 2.2rem); margin:12px 0 4px; font-weight:800; }
+.qg-date{ color:var(--ink-soft); margin:0; font-size:0.95rem; text-transform:capitalize; }
+
+.summary-grid{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:14px;
+  margin:22px 0;
+}
+.summary-card{
+  background:var(--paper); border-radius:16px; padding:16px 18px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:14px;
+  animation:pop-in .35s ease both;
+}
+.summary-icon{ font-size:1.7rem; }
+.summary-label{ font-size:0.78rem; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.summary-value{ font-family:var(--font-display); font-weight:800; font-size:1.05rem; margin-top:2px; }
+
+.tiles-grid{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px;
+  margin:26px 0 10px;
+}
+.module-tile{
+  --tile-color: var(--coral);
+  background:var(--paper); border:none; border-radius:var(--radius);
+  padding:26px 22px; text-align:left; cursor:pointer;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+  display:flex; flex-direction:column; gap:8px;
+  transition:transform .18s ease, box-shadow .18s ease;
+  animation:pop-in .35s ease both;
+}
+.module-tile::before{
+  content:""; position:absolute; inset:0 auto 0 0; width:6px; background:var(--tile-color);
+}
+.module-tile:hover{ transform:translateY(-4px); box-shadow:var(--shadow-lift); }
+.tile-icon{ font-size:2rem; }
+.tile-title{ font-family:var(--font-display); font-weight:800; font-size:1.1rem; }
+.tile-sub{ color:var(--ink-soft); font-size:0.85rem; }
+
+/* ---------- pages de module ---------- */
+.module-header{ display:flex; align-items:center; gap:12px; padding:14px 2px 6px; }
+.back-btn{
+  border:none; background:var(--paper); width:40px; height:40px; border-radius:50%;
+  box-shadow:var(--shadow); font-size:1.1rem; cursor:pointer; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.back-btn:hover{ background:#FFF3E8; }
+.module-header-icon{ font-size:1.7rem; }
+.module-header h1{ font-family:var(--font-display); font-size:1.3rem; margin:0; font-weight:800; }
+
+.module-placeholder{
+  background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow);
+  padding:60px 30px; text-align:center; margin-top:18px;
+  animation:pop-in .35s ease both;
+}
+.module-placeholder .big-emoji{ font-size:2.6rem; display:block; margin-bottom:12px; }
+.module-placeholder h2{ font-family:var(--font-display); margin:0 0 8px; font-size:1.3rem; }
+.module-placeholder p{ color:var(--ink-soft); max-width:420px; margin:0 auto; }
+
+/* ---------- navigation basse, fixe sur mobile ---------- */
+.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:80;
+  height:var(--nav-height);
+  padding-bottom:env(safe-area-inset-bottom);
+  background:var(--paper);
+  box-shadow:0 -6px 20px rgba(58,46,57,0.10);
+  display:flex; align-items:stretch; justify-content:space-around;
+  border-top:1px solid var(--line);
+}
+.nav-btn{
+  flex:1; border:none; background:none; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  color:var(--ink-soft); font-weight:600; font-size:0.68rem; padding:6px 2px;
+  transition:color .15s ease, transform .15s ease;
+}
+.nav-icon{ font-size:1.35rem; transition:transform .15s ease; }
+.nav-btn.active{ color:var(--coral-deep); }
+.nav-btn.active .nav-icon{ transform:translateY(-2px) scale(1.08); }
+.nav-btn:hover .nav-icon{ transform:translateY(-2px); }
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed; bottom:calc(var(--nav-height) + 20px); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:#fff; padding:14px 24px; border-radius:14px;
+  font-family:var(--font-display); font-weight:700; font-size:0.95rem;
+  box-shadow:var(--shadow-lift); opacity:0; transition:all .35s ease; z-index:201;
+  text-align:center; max-width:90vw;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     ÉCRAN DE CONNEXION — rien d'autre n'est visible avant
+     authentification ET autorisation
+     ============================================================ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <span class="hero-eyebrow">🏠 Bei Family</span>
+    <h1>Le portail de la famille</h1>
+    <p>Connectez-vous avec votre compte Google pour retrouver menus, activités, projets et courses au même endroit.</p>
+    <button class="big-btn" id="btnGoogleLogin">
+      <span>🔐</span> Se connecter avec Google
+    </button>
+    <p class="auth-message" id="authMessage"></p>
+  </div>
+</div>
+
+<!-- ============================================================
+     BARRE UTILISATEUR
+     ============================================================ -->
+<div class="user-bar" id="userBar" style="display:none;">
+  <span class="user-email" id="userEmail"></span>
+  <button class="ghost-btn" id="btnLogout">🚪 Se déconnecter</button>
+</div>
+
+<!-- ============================================================
+     COQUILLE DE L'APPLICATION — masquée tant que non connecté
+     ============================================================ -->
+<div id="appShell" style="display:none;">
+  <div class="view-container">
+
+    <!-- ========================= ACCUEIL ========================= -->
+    <section class="view" id="view-home">
+      <header class="qg-hero">
+        <span class="hero-eyebrow">🏠 Bei Family</span>
+        <h1 id="greeting">Bonjour !</h1>
+        <p class="qg-date" id="todayDate"></p>
+      </header>
+
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-card">
+          <span class="summary-icon">🍽️</span>
+          <div>
+            <div class="summary-label">Repas du jour</div>
+            <div class="summary-value" id="sumRepas">Pas encore planifié</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">📅</span>
+          <div>
+            <div class="summary-label">Prochaine activité</div>
+            <div class="summary-value" id="sumActivite">Aucune programmée</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">🛒</span>
+          <div>
+            <div class="summary-label">Liste de courses</div>
+            <div class="summary-value" id="sumCourses">0 article</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">💡</span>
+          <div>
+            <div class="summary-label">Projets en cours</div>
+            <div class="summary-value" id="sumProjets">…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tiles-grid">
+        <button class="module-tile" data-view="menus" style="--tile-color:#F4C95D;">
+          <span class="tile-icon">🍽️</span>
+          <span class="tile-title">Menus de la semaine</span>
+          <span class="tile-sub">Planifiez les repas en famille</span>
+        </button>
+        <button class="module-tile" data-view="activites" style="--tile-color:#9AC7D9;">
+          <span class="tile-icon">📅</span>
+          <span class="tile-title">Activités familiales</span>
+          <span class="tile-sub">Le calendrier de la famille</span>
+        </button>
+        <button class="module-tile" data-view="projets" style="--tile-color:#FF8C6B;">
+          <span class="tile-icon">💡</span>
+          <span class="tile-title">Projets</span>
+          <span class="tile-sub">Toutes les idées à réaliser</span>
+        </button>
+        <button class="module-tile" data-view="courses" style="--tile-color:#8FAE8B;">
+          <span class="tile-icon">🛒</span>
+          <span class="tile-title">Liste de courses</span>
+          <span class="tile-sub">Ce qu'il faut acheter</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE : MENUS ==================== -->
+    <section class="view" id="view-menus" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">🍽️</span>
+        <h1>Menus de la semaine</h1>
+      </header>
+      <div class="module-placeholder">
+        <span class="big-emoji">🚧</span>
+        <h2>Module en construction</h2>
+        <p>Le planning des repas de la semaine arrivera très bientôt ici.</p>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE : ACTIVITÉS ==================== -->
+    <section class="view" id="view-activites" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">📅</span>
+        <h1>Activités familiales</h1>
+      </header>
+      <div class="module-placeholder">
+        <span class="big-emoji">🚧</span>
+        <h2>Module en construction</h2>
+        <p>Le calendrier des activités de la famille arrivera très bientôt ici.</p>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE : PROJETS ==================== -->
+    <section class="view" id="view-projets" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">💡</span>
+        <h1>Projets</h1>
+      </header>
+      <div class="module-placeholder">
+        <span class="big-emoji">🚧</span>
+        <h2>Module en construction</h2>
+        <p>L'interface complète du carnet à idées revient très bientôt ici — toutes vos fiches existantes sont toujours en sécurité dans Firestore.</p>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE : COURSES ==================== -->
+    <section class="view" id="view-courses" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">🛒</span>
+        <h1>Liste de courses</h1>
+      </header>
+      <div class="module-placeholder">
+        <span class="big-emoji">🚧</span>
+        <h2>Module en construction</h2>
+        <p>La liste de courses partagée en famille arrivera très bientôt ici.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============================================================
+       NAVIGATION — fixe en bas sur mobile
+       ============================================================ -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" data-view="home">
+      <span class="nav-icon">🏠</span><span class="nav-label">Accueil</span>
+    </button>
+    <button class="nav-btn" data-view="menus">
+      <span class="nav-icon">🍽️</span><span class="nav-label">Menus</span>
+    </button>
+    <button class="nav-btn" data-view="activites">
+      <span class="nav-icon">📅</span><span class="nav-label">Activités</span>
+    </button>
+    <button class="nav-btn" data-view="projets">
+      <span class="nav-icon">💡</span><span class="nav-label">Projets</span>
+    </button>
+    <button class="nav-btn" data-view="courses">
+      <span class="nav-icon">🛒</span><span class="nav-label">Courses</span>
+    </button>
+  </nav>
+</div><!-- /#appShell -->
+
+<script type="module">
+/* ============================================================
+   FIREBASE — initialisation (SDK Web modulaire v9+)
+   Configuration inchangée : même projet, même base Firestore,
+   mêmes comptes autorisés que dans la version précédente.
+   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyChUmuhiDo31nqGUWTmM6dXHe_Ea5-If88",
+  authDomain: "projet-famille-1e8a7.firebaseapp.com",
+  projectId: "projet-famille-1e8a7",
+  storageBucket: "projet-famille-1e8a7.firebasestorage.app",
+  messagingSenderId: "573062475752",
+  appId: "1:573062475752:web:b48b3c4231ccab22047e5d",
+  measurementId: "G-9MLBB9EJ5E"
+};
+
+// Adresses e-mail autorisées à accéder au portail familial.
+const AUTHORIZED_EMAILS = [
+  "beidavid4@gmail.com",
+  "prequile@gmail.com"
+];
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
+
+// Collection existante du module Projets (ancien "carnet d'idées créatives").
+// On ne fait ici QUE de la lecture, pour le compteur du tableau de bord :
+// aucune donnée de ce module n'est créée, modifiée ou supprimée par ce socle.
+const ideasCollectionRef = collection(db, "idees");
+
+/* ============================================================
+   NAVIGATION — un routeur minimal entre les vues
+   Chaque bouton (tuile, barre de navigation, retour) porte un
+   attribut data-view ; c'est la seule chose à savoir pour brancher
+   un futur module : lui donner un id="view-xxx" + un bouton data-view="xxx".
+   ============================================================ */
+const views = document.querySelectorAll(".view");
+const navButtons = document.querySelectorAll(".nav-btn");
+
+function showView(name){
+  views.forEach(v => { v.hidden = (v.id !== "view-" + name); });
+  navButtons.forEach(b => b.classList.toggle("active", b.dataset.view === name));
+  window.scrollTo({ top:0, behavior:"auto" });
+}
+
+document.querySelectorAll("[data-view]").forEach(el=>{
+  el.addEventListener("click", ()=> showView(el.dataset.view));
+});
+
+/* ============================================================
+   TABLEAU DE BORD — résumé du jour
+   ============================================================ */
+function renderTodayHeader(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("fr-BE", { weekday:"long", day:"numeric", month:"long" });
+  document.getElementById("todayDate").textContent = dateStr;
+}
+
+let unsubscribeProjectsCount = null;
+function startDashboardSync(){
+  if(unsubscribeProjectsCount) return; // déjà démarré
+  unsubscribeProjectsCount = onSnapshot(ideasCollectionRef, (snapshot)=>{
+    const enCours = snapshot.docs.filter(d => d.data().status === "En cours").length;
+    document.getElementById("sumProjets").textContent = enCours + (enCours > 1 ? " projets" : " projet");
+  }, (error)=>{
+    console.error("Erreur de lecture Firestore (module Projets) :", error);
+    document.getElementById("sumProjets").textContent = "—";
+  });
+  // Menus, activités et courses n'ont pas encore de collection Firestore :
+  // les valeurs restent des placeholders jusqu'à la construction de ces modules.
+}
+function stopDashboardSync(){
+  if(unsubscribeProjectsCount){ unsubscribeProjectsCount(); unsubscribeProjectsCount = null; }
+  document.getElementById("sumProjets").textContent = "…";
+}
+
+/* ============================================================
+   AUTHENTIFICATION — connexion Google, accès restreint
+   ============================================================ */
+const authScreen = document.getElementById("authScreen");
+const authMessage = document.getElementById("authMessage");
+const appShell = document.getElementById("appShell");
+const userBar = document.getElementById("userBar");
+const userEmail = document.getElementById("userEmail");
+
+document.getElementById("btnGoogleLogin").addEventListener("click", async ()=>{
+  authMessage.textContent = "";
+  try{
+    await signInWithPopup(auth, googleProvider);
+  }catch(err){
+    console.error(err);
+    authMessage.textContent = "La connexion a échoué. Merci de réessayer.";
+  }
+});
+
+document.getElementById("btnLogout").addEventListener("click", async ()=>{
+  try{ await signOut(auth); }catch(err){ console.error(err); }
+});
+
+onAuthStateChanged(auth, (user)=>{
+  if(!user){
+    stopDashboardSync();
+    appShell.style.display = "none";
+    userBar.style.display = "none";
+    authScreen.style.display = "flex";
+    authMessage.textContent = "";
+    return;
+  }
+
+  const emailOk = !!user.email && AUTHORIZED_EMAILS.includes(user.email);
+  if(!emailOk){
+    stopDashboardSync();
+    appShell.style.display = "none";
+    userBar.style.display = "none";
+    authScreen.style.display = "flex";
+    authMessage.textContent = "Ce compte n'est pas autorisé";
+    signOut(auth);
+    return;
+  }
+
+  authScreen.style.display = "none";
+  authMessage.textContent = "";
+  userEmail.textContent = user.email;
+  userBar.style.display = "flex";
+  appShell.style.display = "block";
+
+  const firstName = (user.displayName || "").split(" ")[0];
+  document.getElementById("greeting").textContent = firstName ? `Bonjour, ${firstName} !` : "Bonjour !";
+
+  showView("home");
+  renderTodayHeader();
+  startDashboardSync();
+});
+
+/* ============================================================
+   TOAST — petit message de confirmation, réutilisable par
+   les futurs modules
+   ============================================================ */
+let toastTimer = null;
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toast.classList.remove("show"), 3200);
+}
+
+/* ============================================================
+   PWA — enregistrement du service worker
+   ============================================================ */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("./service-worker.js")
+      .catch((err)=> console.error("Échec de l'enregistrement du service worker :", err));
+  });
+}
+</script>
+</body>
+</html>
