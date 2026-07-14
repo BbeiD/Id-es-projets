@@ -1,0 +1,3485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>🏠 Bei Family</title>
+
+<!-- ============================================================
+     PWA — manifeste, couleurs, icônes
+     ============================================================ -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF8C6B">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bei Family">
+
+<style>
+/* ============================================================
+   TOKENS — palette "foyer chaleureux", partagée par tout le portail
+   ============================================================ */
+:root{
+  --cream:        #FFF8ED;
+  --paper:        #FFFFFF;
+  --ink:          #3A2E39;
+  --ink-soft:     #7A6B78;
+  --coral:        #FF8C6B;
+  --coral-deep:   #E96A48;
+  --gold:         #F4C95D;
+  --sage:         #8FAE8B;
+  --lavender:     #C9AEE4;
+  --sky:          #9AC7D9;
+  --line:         #F0E4D3;
+  --shadow:       0 8px 24px rgba(58,46,57,0.08);
+  --shadow-lift:  0 14px 34px rgba(58,46,57,0.14);
+  --radius:       18px;
+  --radius-sm:    12px;
+  --nav-height:   72px;
+  --font-display: "Segoe UI Rounded", ui-rounded, "SF Pro Rounded", "Century Gothic", var(--font-body);
+  --font-body:    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background: radial-gradient(circle at 10% -10%, #FFEFD6 0%, var(--cream) 45%) fixed;
+  color:var(--ink);
+  font-family:var(--font-body);
+  line-height:1.5;
+  min-height:100vh;
+}
+button{ font-family:inherit; }
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+}
+@keyframes pop-in{ from{ opacity:0; transform:translateY(10px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);} }
+
+/* ---------- écran de connexion ---------- */
+.auth-screen{
+  position:fixed; inset:0; z-index:150;
+  display:flex; align-items:center; justify-content:center;
+  background: radial-gradient(circle at 10% -10%, #FFEFD6 0%, var(--cream) 45%);
+  padding:24px;
+}
+.auth-card{
+  background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow-lift);
+  max-width:440px; width:100%; padding:44px 32px; text-align:center;
+  animation:pop-in .35s ease both;
+}
+.hero-eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-display); font-weight:700; font-size:0.8rem;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--coral-deep);
+  background:#FFE4D6; padding:6px 14px; border-radius:999px;
+}
+.auth-card h1{ font-family:var(--font-display); font-size:1.8rem; margin:14px 0 8px; font-weight:800; }
+.auth-card p{ color:var(--ink-soft); margin:0 0 22px; }
+.auth-message{ margin-top:16px; font-weight:700; color:#A93636; min-height:20px; font-size:0.9rem; }
+
+.big-btn{
+  font-family:var(--font-display); font-size:1.1rem; font-weight:800; color:#fff;
+  background:linear-gradient(135deg, var(--coral), var(--coral-deep));
+  border:none; padding:18px 34px; border-radius:999px; cursor:pointer;
+  box-shadow:var(--shadow-lift); transition:transform .18s ease, box-shadow .18s ease;
+}
+.big-btn:hover{ transform:translateY(-3px) scale(1.02); box-shadow:0 20px 40px rgba(233,106,72,0.28); }
+.big-btn:active{ transform:translateY(0) scale(0.98); }
+
+/* ---------- barre utilisateur ---------- */
+.user-bar{
+  position:fixed; top:14px; right:14px; z-index:60;
+  display:flex; align-items:center; gap:10px;
+  background:var(--paper); padding:8px 10px 8px 16px; border-radius:999px;
+  box-shadow:var(--shadow); font-size:0.82rem;
+}
+.user-email{ color:var(--ink-soft); font-weight:600; max-width:38vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ghost-btn{
+  border:1px solid var(--line); background:var(--paper); color:var(--ink);
+  padding:7px 13px; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
+}
+.ghost-btn:hover{ background:#FFF3E8; border-color:var(--coral); }
+@media (max-width:640px){
+  .user-bar{ position:static; margin:12px auto 0; width:fit-content; }
+}
+
+/* ---------- coquille de l'application ---------- */
+#appShell{ padding-bottom:calc(var(--nav-height) + 18px + env(safe-area-inset-bottom)); }
+.view-container{ max-width:1000px; margin:0 auto; padding:18px 20px 10px; }
+.view[hidden]{ display:none; }
+
+/* ---------- tableau de bord ---------- */
+.qg-hero{ text-align:center; padding:18px 6px 8px; }
+.qg-hero h1{ font-family:var(--font-display); font-size:clamp(1.6rem, 4vw, 2.2rem); margin:12px 0 4px; font-weight:800; }
+.qg-date{ color:var(--ink-soft); margin:0; font-size:0.95rem; text-transform:capitalize; }
+
+.summary-grid{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:14px;
+  margin:22px 0;
+}
+.summary-card{
+  background:var(--paper); border-radius:16px; padding:16px 18px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:14px;
+  animation:pop-in .35s ease both;
+}
+.summary-icon{ font-size:1.7rem; }
+.summary-label{ font-size:0.78rem; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.summary-value{ font-family:var(--font-display); font-weight:800; font-size:1.05rem; margin-top:2px; }
+
+.tiles-grid{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px;
+  margin:26px 0 10px;
+}
+.module-tile{
+  --tile-color: var(--coral);
+  background:var(--paper); border:none; border-radius:var(--radius);
+  padding:26px 22px; text-align:left; cursor:pointer;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+  display:flex; flex-direction:column; gap:8px;
+  transition:transform .18s ease, box-shadow .18s ease;
+  animation:pop-in .35s ease both;
+}
+.module-tile::before{
+  content:""; position:absolute; inset:0 auto 0 0; width:6px; background:var(--tile-color);
+}
+.module-tile:hover{ transform:translateY(-4px); box-shadow:var(--shadow-lift); }
+.tile-icon{ font-size:2rem; }
+.tile-title{ font-family:var(--font-display); font-weight:800; font-size:1.1rem; }
+.tile-sub{ color:var(--ink-soft); font-size:0.85rem; }
+
+/* ---------- pages de module ---------- */
+.module-header{ display:flex; align-items:center; gap:12px; padding:14px 2px 6px; }
+.back-btn{
+  border:none; background:var(--paper); width:40px; height:40px; border-radius:50%;
+  box-shadow:var(--shadow); font-size:1.1rem; cursor:pointer; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.back-btn:hover{ background:#FFF3E8; }
+.module-header-icon{ font-size:1.7rem; }
+.module-header h1{ font-family:var(--font-display); font-size:1.3rem; margin:0; font-weight:800; }
+
+.module-placeholder{
+  background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow);
+  padding:60px 30px; text-align:center; margin-top:18px;
+  animation:pop-in .35s ease both;
+}
+.module-placeholder .big-emoji{ font-size:2.6rem; display:block; margin-bottom:12px; }
+.module-placeholder h2{ font-family:var(--font-display); margin:0 0 8px; font-size:1.3rem; }
+.module-placeholder p{ color:var(--ink-soft); max-width:420px; margin:0 auto; }
+
+/* ---------- navigation basse, fixe sur mobile ---------- */
+.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:80;
+  height:var(--nav-height);
+  padding-bottom:env(safe-area-inset-bottom);
+  background:var(--paper);
+  box-shadow:0 -6px 20px rgba(58,46,57,0.10);
+  display:flex; align-items:stretch; justify-content:space-around;
+  border-top:1px solid var(--line);
+}
+.nav-btn{
+  flex:1; border:none; background:none; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  color:var(--ink-soft); font-weight:600; font-size:0.68rem; padding:6px 2px;
+  transition:color .15s ease, transform .15s ease;
+}
+.nav-icon{ font-size:1.35rem; transition:transform .15s ease; }
+.nav-btn.active{ color:var(--coral-deep); }
+.nav-btn.active .nav-icon{ transform:translateY(-2px) scale(1.08); }
+.nav-btn:hover .nav-icon{ transform:translateY(-2px); }
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed; bottom:calc(var(--nav-height) + 20px); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--ink); color:#fff; padding:14px 24px; border-radius:14px;
+  font-family:var(--font-display); font-weight:700; font-size:0.95rem;
+  box-shadow:var(--shadow-lift); opacity:0; transition:all .35s ease; z-index:201;
+  text-align:center; max-width:90vw;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ============================================================
+   MODULE : MENUS DE LA SEMAINE
+   ============================================================ */
+
+/* ---- navigation de semaine ---- */
+.week-nav{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  margin:16px 0 18px;
+}
+.week-nav-btn{
+  width:40px; height:40px; border-radius:50%; border:none; background:var(--paper);
+  box-shadow:var(--shadow); font-size:1.3rem; cursor:pointer; color:var(--ink); flex-shrink:0;
+}
+.week-nav-btn:hover{ background:#FFF3E8; }
+.week-nav-label{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.week-nav-label span{ font-family:var(--font-display); font-weight:700; font-size:0.95rem; text-transform:capitalize; }
+.week-today-btn{
+  border:none; background:none; color:var(--coral-deep); font-weight:700; font-size:0.78rem;
+  cursor:pointer; text-decoration:underline;
+}
+
+/* ---- cartes des jours ---- */
+.days-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:14px;
+}
+.day-card{
+  background:var(--paper); border:none; border-radius:16px; padding:18px 18px;
+  box-shadow:var(--shadow); cursor:pointer; text-align:left;
+  display:flex; flex-direction:column; gap:10px;
+  transition:transform .16s ease, box-shadow .16s ease;
+  animation:pop-in .3s ease both;
+}
+.day-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lift); }
+.day-card-label{
+  font-family:var(--font-display); font-weight:800; font-size:0.98rem; color:var(--ink);
+  display:flex; align-items:baseline; gap:6px;
+}
+.day-card-label small{ font-weight:500; color:var(--ink-soft); font-size:0.75rem; }
+.day-card-meal{ font-size:0.92rem; color:var(--ink); display:flex; align-items:center; gap:8px; }
+.day-card.is-empty .day-card-meal{ color:var(--ink-soft); }
+.meal-emoji{ font-size:1.25rem; }
+
+/* ---- fenêtres modales (composant générique réutilisable) ---- */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(58,46,57,0.45);
+  display:none; align-items:flex-start; justify-content:center;
+  padding:30px 14px; z-index:100; overflow-y:auto; backdrop-filter:blur(2px);
+}
+.modal-backdrop.open{ display:flex; animation:fade-in .2s ease; }
+@keyframes fade-in{ from{opacity:0;} to{opacity:1;} }
+.modal{
+  background:var(--paper); border-radius:20px; max-width:560px; width:100%;
+  padding:26px 24px 28px; box-shadow:var(--shadow-lift);
+  animation:modal-in .25s cubic-bezier(.2,.8,.3,1); margin:auto 0;
+}
+@keyframes modal-in{ from{opacity:0; transform:translateY(18px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);} }
+.modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.modal-head h2{ font-family:var(--font-display); font-size:1.3rem; margin:0; }
+.close-x{
+  background:var(--cream); border:none; width:34px; height:34px; border-radius:50%;
+  font-size:1.05rem; cursor:pointer; color:var(--ink-soft); flex-shrink:0;
+}
+.close-x:hover{ background:#FFE4D6; color:var(--coral-deep); }
+
+/* ---- champs de formulaire (partagés par les futurs modules) ---- */
+.field{ margin-bottom:14px; }
+.field label{ display:block; font-size:0.85rem; font-weight:600; margin-bottom:5px; color:var(--ink-soft); }
+input[type=text], input[type=number], input[type=search], textarea, select{
+  width:100%; padding:11px 13px; border-radius:10px; border:1.5px solid var(--line);
+  font-family:var(--font-body); font-size:0.95rem; background:#FFFDFA; color:var(--ink);
+  transition:border-color .15s ease;
+}
+input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--coral); }
+textarea{ resize:vertical; min-height:64px; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:520px){ .row2{ grid-template-columns:1fr; } }
+
+.section-label{
+  display:flex; align-items:center; gap:8px;
+  font-family:var(--font-display); font-weight:700; font-size:0.92rem;
+  margin:18px 0 10px; color:var(--ink);
+}
+
+.modal-actions{ display:flex; gap:10px; margin-top:22px; justify-content:flex-end; }
+.btn-primary{
+  background:var(--coral); color:#fff; border:none; padding:12px 24px; border-radius:12px;
+  font-weight:700; font-size:0.95rem; cursor:pointer; transition:background .15s ease;
+}
+.btn-primary:hover{ background:var(--coral-deep); }
+.btn-secondary{
+  background:var(--cream); color:var(--ink-soft); border:none; padding:12px 20px; border-radius:12px;
+  font-weight:600; font-size:0.95rem; cursor:pointer;
+}
+.btn-secondary:hover{ background:#F0E4D3; }
+.btn-danger{ background:#FBDADA; color:#A93636; border:none; padding:12px 20px; border-radius:12px; font-weight:600; cursor:pointer; }
+.btn-danger:hover{ background:#F5C3C3; }
+
+/* ---- ingrédients (module Menus) ---- */
+.ingredient-row{
+  display:grid; grid-template-columns:2fr 0.8fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center;
+}
+@media (max-width:520px){ .ingredient-row{ grid-template-columns:1fr 1fr; } }
+.ing-remove{
+  background:var(--cream); border:none; width:36px; height:36px; border-radius:50%;
+  cursor:pointer; color:var(--ink-soft); flex-shrink:0;
+}
+.ing-remove:hover{ background:#FBDADA; color:#A93636; }
+.ingredient-list{ margin:0; padding-left:20px; color:var(--ink); font-size:0.9rem; }
+.ingredient-list li{ padding:2px 0; }
+
+/* ---- détail d'un repas assigné à un jour ---- */
+.meal-detail-card{ padding-top:4px; }
+.meal-detail-head{ display:flex; align-items:center; gap:12px; }
+.meal-detail-name{ font-family:var(--font-display); font-weight:800; font-size:1.15rem; }
+.meal-detail-meta{ color:var(--ink-soft); font-size:0.85rem; margin-top:2px; text-transform:capitalize; }
+.day-modal-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+.day-modal-actions button{ flex:1; min-width:120px; }
+
+/* ---- bibliothèque de repas ---- */
+.library-item{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 8px; border-bottom:1px solid var(--line);
+}
+.library-item-main{ display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; }
+.library-item-name{ font-weight:700; font-size:0.95rem; }
+.library-item-meta{ color:var(--ink-soft); font-size:0.8rem; }
+.library-item-delete{
+  background:none; border:none; cursor:pointer; color:var(--ink-soft); font-size:1.05rem;
+  padding:6px; border-radius:8px; flex-shrink:0;
+}
+.library-item-delete:hover{ background:#FBDADA; color:#A93636; }
+
+/* ============================================================
+   MODULE : ACTIVITÉS FAMILIALES
+   ============================================================ */
+
+/* ---- bascule Aujourd'hui / Semaine ---- */
+.view-toggle{
+  display:inline-flex; background:var(--paper); border-radius:999px; padding:4px;
+  box-shadow:var(--shadow); margin:16px 0 18px; gap:4px;
+}
+.toggle-btn{
+  border:none; background:none; padding:9px 20px; border-radius:999px; cursor:pointer;
+  font-weight:700; font-size:0.87rem; color:var(--ink-soft); transition:all .15s ease;
+}
+.toggle-btn.active{ background:var(--coral); color:#fff; }
+.activites-subview[hidden]{ display:none; }
+.subview-date{ color:var(--ink-soft); text-transform:capitalize; font-weight:600; margin:0 0 14px; }
+
+/* ---- vue Aujourd'hui : grandes cartes ---- */
+.activity-card{
+  display:flex; align-items:stretch; gap:14px; background:var(--paper); border-radius:16px;
+  padding:16px 18px; box-shadow:var(--shadow); margin-bottom:12px; cursor:pointer;
+  border-left:6px solid var(--activity-color, var(--coral));
+  transition:transform .15s ease, box-shadow .15s ease;
+  animation:pop-in .3s ease both;
+}
+.activity-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-lift); }
+.activity-card-time{
+  font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:var(--ink);
+  min-width:56px; display:flex; flex-direction:column; justify-content:center; line-height:1.3;
+}
+.activity-card-time small{ color:var(--ink-soft); font-weight:600; font-size:0.72rem; }
+.activity-card-main{ flex:1; min-width:0; }
+.activity-card-title{ font-family:var(--font-display); font-weight:800; font-size:1.02rem; display:flex; align-items:center; gap:8px; }
+.activity-card-meta{ color:var(--ink-soft); font-size:0.82rem; margin-top:3px; display:flex; flex-wrap:wrap; gap:8px; }
+.empty-today{
+  background:var(--paper); border-radius:16px; padding:34px 20px; text-align:center;
+  color:var(--ink-soft); box-shadow:var(--shadow);
+}
+
+/* ---- vue Semaine : colonnes défilables ---- */
+.week-columns{
+  display:flex; gap:12px; overflow-x:auto; padding-bottom:10px; scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+}
+.week-day-column{
+  background:var(--paper); border-radius:16px; box-shadow:var(--shadow);
+  min-width:190px; flex:1 0 190px; scroll-snap-align:start; padding:14px 12px; display:flex; flex-direction:column;
+}
+.week-day-column.is-today{ outline:2px solid var(--coral); outline-offset:-2px; }
+.week-day-head{ font-family:var(--font-display); font-weight:800; font-size:0.9rem; margin-bottom:2px; }
+.week-day-head small{ display:block; font-weight:500; color:var(--ink-soft); font-size:0.72rem; text-transform:capitalize; }
+.week-activity-chip{
+  border-left:4px solid var(--activity-color, var(--coral)); background:var(--cream); border-radius:10px;
+  padding:8px 10px; margin-top:8px; cursor:pointer; font-size:0.8rem; transition:background .15s ease;
+}
+.week-activity-chip:hover{ background:#FFF0DE; }
+.week-activity-chip .wac-time{ font-weight:700; color:var(--ink); }
+.week-activity-chip .wac-title{ display:block; color:var(--ink); margin-top:1px; }
+.week-day-empty{ color:var(--ink-soft); font-size:0.75rem; margin-top:10px; }
+.week-day-add{
+  margin-top:auto; padding-top:10px; border:none; background:none; color:var(--ink-soft);
+  font-size:0.78rem; font-weight:600; cursor:pointer; text-align:left;
+}
+.week-day-add:hover{ color:var(--coral-deep); }
+
+/* ---- bouton flottant d'ajout ---- */
+.fab-add-btn{
+  position:fixed; right:20px; bottom:calc(var(--nav-height) + 20px + env(safe-area-inset-bottom));
+  width:58px; height:58px; border-radius:50%; border:none; z-index:70;
+  background:linear-gradient(135deg, var(--coral), var(--coral-deep)); color:#fff; font-size:1.5rem;
+  box-shadow:var(--shadow-lift); cursor:pointer; transition:transform .15s ease;
+}
+.fab-add-btn:hover{ transform:scale(1.06) translateY(-2px); }
+
+/* ---- sélecteur de membre (chips) ---- */
+.member-picker{ display:flex; flex-wrap:wrap; gap:8px; }
+.member-chip{
+  --chip-color: var(--coral);
+  border:2px solid var(--line); background:#FFFDFA; padding:8px 14px; border-radius:999px;
+  cursor:pointer; font-size:0.87rem; font-weight:600; color:var(--ink-soft);
+  display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
+}
+.member-chip:hover{ border-color:var(--chip-color); }
+.member-chip.selected{ background:var(--chip-color); border-color:var(--chip-color); color:#fff; }
+
+/* ---- sélecteur de couleur (pastilles) ---- */
+.color-swatch-row{ display:flex; flex-wrap:wrap; gap:10px; }
+.color-swatch{
+  width:34px; height:34px; border-radius:50%; border:3px solid transparent; cursor:pointer;
+  transition:transform .12s ease, border-color .12s ease;
+}
+.color-swatch:hover{ transform:scale(1.1); }
+.color-swatch.selected{ border-color:var(--ink); transform:scale(1.1); }
+
+/* ============================================================
+   MODULE : LISTE DE COURSES
+   ============================================================ */
+.courses-summary{
+  display:flex; gap:18px; margin:14px 0 18px; font-weight:700; color:var(--ink-soft);
+  font-size:0.88rem; flex-wrap:wrap;
+}
+.courses-summary b{ color:var(--ink); font-family:var(--font-display); font-size:1rem; }
+
+/* ---- ajout ultra-rapide ---- */
+.quick-add-form{ margin-bottom:16px; }
+.quick-add-row{ display:flex; gap:8px; align-items:center; }
+.quick-add-row input[type=text]{ flex:1; }
+.qa-toggle-btn, .qa-submit-btn{
+  width:46px; height:46px; border-radius:12px; border:none; cursor:pointer; font-size:1.15rem; flex-shrink:0;
+  transition:all .15s ease;
+}
+.qa-toggle-btn{ background:var(--cream); color:var(--ink-soft); }
+.qa-toggle-btn:hover{ background:#F0E4D3; }
+.qa-toggle-btn.active{ background:var(--coral); color:#fff; }
+.qa-submit-btn{ background:var(--coral); color:#fff; }
+.qa-submit-btn:hover{ background:var(--coral-deep); }
+.quick-add-advanced{
+  margin-top:10px; display:flex; flex-direction:column; gap:10px; background:var(--paper);
+  border-radius:14px; padding:14px; box-shadow:var(--shadow);
+}
+.quick-add-advanced[hidden]{ display:none; }
+
+.duplicate-banner{
+  margin-top:10px; background:#FFF3CE; border-radius:12px; padding:12px 14px; font-size:0.85rem;
+  color:#8A6C00; display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+}
+.duplicate-banner[hidden]{ display:none; }
+.duplicate-banner button{ border:none; border-radius:8px; padding:7px 13px; font-weight:700; cursor:pointer; font-size:0.8rem; }
+.dup-btn-merge{ background:var(--coral); color:#fff; }
+.dup-btn-new{ background:#fff; color:var(--ink); }
+
+.magasin-filter{ margin:10px 0 4px; max-width:220px; }
+.magasin-filter[hidden]{ display:none; }
+
+/* ---- articles ---- */
+.course-category-head{
+  font-family:var(--font-display); font-weight:800; font-size:0.8rem; color:var(--ink-soft);
+  text-transform:uppercase; letter-spacing:.04em; margin:18px 0 8px;
+}
+.course-item{
+  display:flex; align-items:center; gap:12px; background:var(--paper); border-radius:14px;
+  padding:12px 14px; margin-bottom:8px; box-shadow:var(--shadow); cursor:pointer;
+  transition:transform .12s ease; animation:pop-in .25s ease both;
+}
+.course-item:hover{ transform:translateY(-1px); }
+.course-item.is-priority{ border-left:4px solid #E96A48; }
+.course-check{
+  width:32px; height:32px; border-radius:50%; border:2.5px solid var(--line); background:#fff;
+  cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1rem;
+  transition:all .15s ease; color:transparent;
+}
+.course-check.checked{ background:var(--sage); border-color:var(--sage); color:#fff; }
+.course-item-main{ flex:1; min-width:0; }
+.course-item-name{ font-weight:700; font-size:0.95rem; display:flex; align-items:center; gap:6px; }
+.course-item.is-bought .course-item-name{ text-decoration:line-through; color:var(--ink-soft); font-weight:500; }
+.course-item-meta{ color:var(--ink-soft); font-size:0.78rem; display:flex; gap:10px; margin-top:2px; flex-wrap:wrap; }
+.priority-star{ font-size:0.9rem; }
+
+.section-toggle{
+  display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer;
+  font-family:var(--font-display); font-weight:800; color:var(--ink); font-size:0.95rem; margin:22px 0 8px; padding:0;
+}
+#boughtList[hidden]{ display:none; }
+
+.empty-courses{
+  background:var(--paper); border-radius:16px; padding:30px 20px; text-align:center;
+  color:var(--ink-soft); box-shadow:var(--shadow); margin-top:10px; font-size:0.9rem;
+}
+
+.checkbox-row{
+  display:flex; align-items:center; gap:10px; margin:6px 0 16px; cursor:pointer;
+  font-weight:600; font-size:0.92rem; color:var(--ink);
+}
+.checkbox-row input[type=checkbox]{ width:20px; height:20px; accent-color:var(--coral); cursor:pointer; }
+
+/* ============================================================
+   MODULE : PROJETS (collection Firestore "idees")
+   ============================================================ */
+.tool-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.big-emoji-standalone{ font-size:2.4rem; display:block; margin-bottom:10px; }
+.notes-box{ width:100%; min-height:80px; padding:11px 13px; border-radius:10px; border:1.5px solid var(--line);
+  font-family:var(--font-body); font-size:0.95rem; background:#FFFDFA; color:var(--ink); resize:vertical; }
+.notes-box:focus{ outline:none; border-color:var(--coral); }
+
+.projects-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:16px; margin-top:6px;
+}
+.project-card{
+  background:var(--paper); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow);
+  cursor:pointer; display:flex; flex-direction:column; gap:10px;
+  transition:transform .16s ease, box-shadow .16s ease; animation:pop-in .3s ease both;
+}
+.project-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-lift); }
+.project-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.project-card-title{ font-family:var(--font-display); font-weight:800; font-size:1.05rem; }
+.status-badge{ font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+.status-badge.attente{ background:#FDECC8; color:#946200; }
+.status-badge.cours{ background:#DCEEF3; color:#2C6B7D; }
+.status-badge.termine{ background:#E1EFDD; color:#3F6B3A; }
+.status-badge.abandonne{ background:#F1E2E2; color:#8A3C3C; }
+.project-card-desc{ color:var(--ink-soft); font-size:0.88rem; }
+.priority-tag{ font-size:0.78rem; font-weight:700; padding:5px 11px; border-radius:10px; align-self:flex-start; }
+.p-green{ background:#E1F4DE; color:#357A38; }
+.p-yellow{ background:#FFF3CE; color:#8A6C00; }
+.p-orange{ background:#FFE4CE; color:#A15600; }
+.p-red{ background:#FBDADA; color:#A93636; }
+.project-card-meta{ display:flex; flex-wrap:wrap; gap:10px; font-size:0.8rem; color:var(--ink-soft); }
+.enthu-bar{ display:flex; align-items:center; gap:6px; }
+.enthu-track{ flex:1; height:6px; border-radius:6px; background:var(--line); overflow:hidden; }
+.enthu-fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--coral)); }
+.checklist-progress-row{ display:flex; align-items:center; gap:8px; font-size:0.78rem; color:var(--ink-soft); }
+.checklist-progress-track{ flex:1; height:6px; border-radius:6px; background:var(--line); overflow:hidden; }
+.checklist-progress-fill{ height:100%; background:var(--sage); }
+
+.score-panel{
+  margin-top:16px; padding:16px; border-radius:16px; text-align:center;
+  font-family:var(--font-display); font-weight:800; font-size:1.05rem;
+}
+.score-panel .sub{ display:block; font-weight:500; font-size:0.82rem; margin-top:4px; font-family:var(--font-body); }
+.sc-green{ background:#E5F5E1; color:#2E6B2F; }
+.sc-yellow{ background:#FFF3CE; color:#8A6C00; }
+.sc-orange{ background:#FFE4CE; color:#A15600; }
+.sc-red{ background:#FBDADA; color:#A93636; }
+
+.humor-block{ background:#FBF4FF; border:1px dashed #E3CFF5; border-radius:14px; padding:16px 16px 6px; margin-top:6px; }
+.choice-btns{ display:flex; flex-wrap:wrap; gap:8px; }
+.choice-btn{
+  border:1.5px solid var(--line); background:#FFFDFA; padding:9px 15px; border-radius:12px;
+  cursor:pointer; font-size:0.85rem; font-weight:600; color:var(--ink-soft); transition:all .15s ease;
+}
+.choice-btn:hover{ border-color:var(--lavender); }
+.choice-btn.selected{ background:var(--lavender); border-color:var(--lavender); color:#443463; }
+
+.slider-wrap{ display:flex; align-items:center; gap:12px; }
+.slider-wrap input[type=range]{ flex:1; accent-color:var(--coral); }
+.slider-emoji{ font-size:1.5rem; min-width:36px; text-align:center; }
+
+.photo-upload{
+  border:2px dashed var(--line); border-radius:14px; padding:16px; text-align:center;
+  cursor:pointer; color:var(--ink-soft); font-size:0.86rem; position:relative;
+}
+.photo-upload:hover{ border-color:var(--coral); }
+.photo-preview{ max-width:100%; max-height:160px; border-radius:10px; margin-top:10px; }
+
+.detail-meta-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:16px 0; }
+.detail-meta-grid div{ background:var(--cream); border-radius:10px; padding:10px 12px; font-size:0.83rem; }
+.detail-meta-grid b{ display:block; font-family:var(--font-display); font-size:0.92rem; }
+@media (max-width:520px){ .detail-meta-grid{ grid-template-columns:1fr; } }
+
+.status-select-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.status-btn{
+  border:1.5px solid var(--line); background:#FFFDFA; padding:7px 14px; border-radius:10px;
+  cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--ink-soft);
+}
+.status-btn.active-attente{ background:#FDECC8; border-color:#FDECC8; color:#946200; }
+.status-btn.active-cours{ background:#DCEEF3; border-color:#DCEEF3; color:#2C6B7D; }
+.status-btn.active-termine{ background:#E1EFDD; border-color:#E1EFDD; color:#3F6B3A; }
+.status-btn.active-abandonne{ background:#F1E2E2; border-color:#F1E2E2; color:#8A3C3C; }
+
+.checklist-item{ display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); }
+.checklist-item input[type=checkbox]{ width:auto; }
+.checklist-item span.done{ text-decoration:line-through; color:var(--ink-soft); }
+.add-row{ display:flex; gap:8px; margin-top:8px; }
+.add-row input{ flex:1; }
+
+/* ---- confettis (célébration de fin de projet) ---- */
+#confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:250; }
+
+/* ---- impression / export PDF individuel ---- */
+#printArea{ display:none; }
+@media print{
+  body *{ visibility:hidden; }
+  #printArea, #printArea *{ visibility:visible; }
+  #printArea{ display:block; position:absolute; left:0; top:0; width:100%; padding:0; margin:0; background:#fff; color:#2a2230; }
+  .print-report-header{ text-align:center; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid #F0E4D3; }
+  .print-report-header h1{ font-family:var(--font-display); font-size:1.4rem; margin:0 0 4px; }
+  .print-report-header p{ margin:0; color:#7A6B78; font-size:0.85rem; }
+  .print-project{ padding:0 4px; }
+  .print-project h2{ font-family:var(--font-display); font-size:1.15rem; margin:0 0 4px; }
+  .print-photo{ display:block; max-width:100%; max-height:220px; margin:8px 0 10px; border-radius:10px; object-fit:cover; }
+  .print-priority{ font-weight:700; margin:6px 0; }
+  .print-meta{ font-size:0.85rem; color:#4a3f47; margin:6px 0; }
+  .print-meta span{ display:inline-block; margin-right:16px; }
+  .print-block{ font-size:0.85rem; margin-top:8px; }
+  .print-block b{ display:block; margin-bottom:2px; }
+  .print-checklist{ list-style:none; margin:4px 0 0; padding:0; font-size:0.85rem; }
+  .print-checklist li.done{ text-decoration:line-through; color:#8a7d86; }
+  @page{ margin:12mm; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div class="toast" id="toast"></div>
+<!-- Zone d'impression utilisée uniquement pour l'export PDF individuel d'un projet -->
+<div id="printArea"></div>
+
+<!-- ============================================================
+     ÉCRAN DE CONNEXION — rien d'autre n'est visible avant
+     authentification ET autorisation
+     ============================================================ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <span class="hero-eyebrow">🏠 Bei Family</span>
+    <h1>Le portail de la famille</h1>
+    <p>Connectez-vous avec votre compte Google pour retrouver menus, activités, projets et courses au même endroit.</p>
+    <button class="big-btn" id="btnGoogleLogin">
+      <span>🔐</span> Se connecter avec Google
+    </button>
+    <p class="auth-message" id="authMessage"></p>
+  </div>
+</div>
+
+<!-- ============================================================
+     BARRE UTILISATEUR
+     ============================================================ -->
+<div class="user-bar" id="userBar" style="display:none;">
+  <span class="user-email" id="userEmail"></span>
+  <button class="ghost-btn" id="btnLogout">🚪 Se déconnecter</button>
+</div>
+
+<!-- ============================================================
+     COQUILLE DE L'APPLICATION — masquée tant que non connecté
+     ============================================================ -->
+<div id="appShell" style="display:none;">
+  <div class="view-container">
+
+    <!-- ========================= ACCUEIL ========================= -->
+    <section class="view" id="view-home">
+      <header class="qg-hero">
+        <span class="hero-eyebrow">🏠 Bei Family</span>
+        <h1 id="greeting">Bonjour !</h1>
+        <p class="qg-date" id="todayDate"></p>
+      </header>
+
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-card">
+          <span class="summary-icon">🍽️</span>
+          <div>
+            <div class="summary-label">Repas du jour</div>
+            <div class="summary-value" id="sumRepas">Pas encore planifié</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">📅</span>
+          <div>
+            <div class="summary-label">Prochaine activité</div>
+            <div class="summary-value" id="sumActivite">Aucune programmée</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">🛒</span>
+          <div>
+            <div class="summary-label">Liste de courses</div>
+            <div class="summary-value" id="sumCourses">0 article</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">💡</span>
+          <div>
+            <div class="summary-label">Projets en cours</div>
+            <div class="summary-value" id="sumProjets">…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tiles-grid">
+        <button class="module-tile" data-view="menus" style="--tile-color:#F4C95D;">
+          <span class="tile-icon">🍽️</span>
+          <span class="tile-title">Menus de la semaine</span>
+          <span class="tile-sub">Planifiez les repas en famille</span>
+        </button>
+        <button class="module-tile" data-view="activites" style="--tile-color:#9AC7D9;">
+          <span class="tile-icon">📅</span>
+          <span class="tile-title">Activités familiales</span>
+          <span class="tile-sub">Le calendrier de la famille</span>
+        </button>
+        <button class="module-tile" data-view="projets" style="--tile-color:#FF8C6B;">
+          <span class="tile-icon">💡</span>
+          <span class="tile-title">Projets</span>
+          <span class="tile-sub">Toutes les idées à réaliser</span>
+        </button>
+        <button class="module-tile" data-view="courses" style="--tile-color:#8FAE8B;">
+          <span class="tile-icon">🛒</span>
+          <span class="tile-title">Liste de courses</span>
+          <span class="tile-sub">Ce qu'il faut acheter</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE : MENUS ==================== -->
+    <section class="view" id="view-menus" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">🍽️</span>
+        <h1>Menus de la semaine</h1>
+      </header>
+
+      <div class="week-nav">
+        <button class="week-nav-btn" id="prevWeekBtn" aria-label="Semaine précédente">‹</button>
+        <div class="week-nav-label">
+          <span id="weekRangeLabel">Semaine du ...</span>
+          <button class="week-today-btn" id="todayWeekBtn">Aujourd'hui</button>
+        </div>
+        <button class="week-nav-btn" id="nextWeekBtn" aria-label="Semaine suivante">›</button>
+      </div>
+
+      <div class="days-grid" id="daysGrid"><!-- rempli en JS --></div>
+    </section>
+
+    <!-- ==================== MODULE : ACTIVITÉS ==================== -->
+    <section class="view" id="view-activites" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">📅</span>
+        <h1>Activités familiales</h1>
+      </header>
+
+      <div class="view-toggle" id="activitesViewToggle">
+        <button type="button" class="toggle-btn active" data-subview="today">Aujourd'hui</button>
+        <button type="button" class="toggle-btn" data-subview="week">Semaine</button>
+      </div>
+
+      <!-- ---- sous-vue : aujourd'hui ---- -->
+      <div class="activites-subview" id="subview-today">
+        <p class="subview-date" id="todaySubviewDate"></p>
+        <div id="todayActivitiesList"></div>
+      </div>
+
+      <!-- ---- sous-vue : semaine ---- -->
+      <div class="activites-subview" id="subview-week" hidden>
+        <div class="week-nav">
+          <button class="week-nav-btn" id="actPrevWeekBtn" aria-label="Semaine précédente">‹</button>
+          <div class="week-nav-label">
+            <span id="actWeekRangeLabel">Semaine du ...</span>
+            <button class="week-today-btn" id="actTodayWeekBtn">Aujourd'hui</button>
+          </div>
+          <button class="week-nav-btn" id="actNextWeekBtn" aria-label="Semaine suivante">›</button>
+        </div>
+        <div class="week-columns" id="weekColumns"><!-- rempli en JS --></div>
+      </div>
+
+      <button type="button" class="fab-add-btn" id="fabAddActivity" aria-label="Ajouter une activité">➕</button>
+    </section>
+
+    <!-- ==================== MODULE : PROJETS ==================== -->
+    <section class="view" id="view-projets" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">💡</span>
+        <h1>Nos projets</h1>
+      </header>
+
+      <div class="courses-summary" id="projectsSummary"></div>
+
+      <div class="view-toggle" id="projectsFilterBar">
+        <button type="button" class="toggle-btn active" data-filter="Toutes">Tous</button>
+        <button type="button" class="toggle-btn" data-filter="En attente">En attente</button>
+        <button type="button" class="toggle-btn" data-filter="En cours">En cours</button>
+        <button type="button" class="toggle-btn" data-filter="Terminé">Terminés</button>
+        <button type="button" class="toggle-btn" data-filter="Abandonné">Abandonnés</button>
+      </div>
+
+      <div class="tool-actions" style="margin:2px 0 18px;">
+        <button type="button" class="big-btn" id="btnNewProject" style="padding:12px 24px; font-size:0.95rem;">✨ Nouveau projet</button>
+        <button type="button" class="ghost-btn" id="btnExportProjectsJson">⬇️ JSON</button>
+        <button type="button" class="ghost-btn" id="btnImportProjectsJson">⬆️ JSON</button>
+        <button type="button" class="ghost-btn" id="btnExportProjectsCsv">📊 Excel</button>
+        <input type="file" id="projectsFileImport" accept="application/json" style="display:none">
+      </div>
+
+      <div class="projects-grid" id="projectsGrid"></div>
+      <div class="empty-courses" id="projectsEmptyState" style="display:none;">
+        <span class="big-emoji-standalone">🪄</span>
+        <p>Le carnet est encore vierge. Cliquez sur « Nouveau projet » pour capturer votre première idée !</p>
+      </div>
+    </section>
+
+    <!-- ==================== MODULE : COURSES ==================== -->
+    <section class="view" id="view-courses" hidden>
+      <header class="module-header">
+        <button class="back-btn" data-view="home">←</button>
+        <span class="module-header-icon">🛒</span>
+        <h1>Liste de courses</h1>
+      </header>
+
+      <div class="courses-summary" id="coursesSummary"></div>
+
+      <form id="quickAddForm" class="quick-add-form">
+        <div class="quick-add-row">
+          <input type="text" id="qa_nom" placeholder="Ajouter un article..." autocomplete="off">
+          <button type="button" class="qa-toggle-btn" id="qaToggleAdvanced" aria-label="Options avancées">⚙️</button>
+          <button type="submit" class="qa-submit-btn" aria-label="Ajouter l'article">➕</button>
+        </div>
+        <div class="quick-add-advanced" id="quickAddAdvanced" hidden>
+          <div class="row2">
+            <input type="number" id="qa_quantite" placeholder="Quantité" min="0" step="0.5">
+            <select id="qa_unite"><!-- rempli en JS --></select>
+          </div>
+          <select id="qa_categorie"><!-- rempli en JS --></select>
+          <input type="text" id="qa_magasin" placeholder="Magasin (facultatif)">
+          <label class="checkbox-row">
+            <input type="checkbox" id="qa_prioritaire">
+            <span>⭐ Prioritaire</span>
+          </label>
+        </div>
+        <div class="duplicate-banner" id="duplicateBanner" hidden></div>
+      </form>
+
+      <div class="view-toggle" id="coursesFilterBar">
+        <button type="button" class="toggle-btn active" data-filter="tous">Tous</button>
+        <button type="button" class="toggle-btn" data-filter="aAcheter">À acheter</button>
+        <button type="button" class="toggle-btn" data-filter="achetes">Achetés</button>
+        <button type="button" class="toggle-btn" data-filter="prioritaires">⭐ Prioritaires</button>
+      </div>
+      <select id="magasinFilterSelect" class="magasin-filter" hidden></select>
+
+      <div id="toBuySection">
+        <div id="toBuyList"></div>
+      </div>
+
+      <div id="boughtSection">
+        <button type="button" class="section-toggle" id="boughtSectionToggle">Déjà dans le panier ▾</button>
+        <button type="button" class="ghost-btn" id="cleanBoughtBtn" style="margin:2px 0 14px;">🧹 Nettoyer les articles cochés</button>
+        <div id="boughtList"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============================================================
+       NAVIGATION — fixe en bas sur mobile
+       ============================================================ -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" data-view="home">
+      <span class="nav-icon">🏠</span><span class="nav-label">Accueil</span>
+    </button>
+    <button class="nav-btn" data-view="menus">
+      <span class="nav-icon">🍽️</span><span class="nav-label">Menus</span>
+    </button>
+    <button class="nav-btn" data-view="activites">
+      <span class="nav-icon">📅</span><span class="nav-label">Activités</span>
+    </button>
+    <button class="nav-btn" data-view="projets">
+      <span class="nav-icon">💡</span><span class="nav-label">Projets</span>
+    </button>
+    <button class="nav-btn" data-view="courses">
+      <span class="nav-icon">🛒</span><span class="nav-label">Courses</span>
+    </button>
+  </nav>
+
+  <!-- ============================================================
+       MODULES : fenêtres modales réutilisables
+       (indépendantes des sections .view pour rester visibles
+       quelle que soit la vue actuellement affichée)
+       ============================================================ -->
+
+  <!-- ---- Menus : détail d'un jour ---- -->
+  <div class="modal-backdrop" id="dayModalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="dayModalTitle">Lundi</h2>
+        <button class="close-x" id="closeDayModal">✕</button>
+      </div>
+      <div id="dayModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ---- Menus : créer / modifier un repas ---- -->
+  <div class="modal-backdrop" id="mealFormBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="mealFormTitle">✨ Nouveau repas</h2>
+        <button class="close-x" id="closeMealForm">✕</button>
+      </div>
+      <form id="mealForm">
+        <div class="field">
+          <label for="m_nom">Nom du repas</label>
+          <input type="text" id="m_nom" required placeholder="Ex : Lasagnes maison">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="m_categorie">Catégorie</label>
+            <select id="m_categorie">
+              <option value="Viande">🍖 Viande</option>
+              <option value="Poisson">🐟 Poisson</option>
+              <option value="Pâtes">🍝 Pâtes</option>
+              <option value="Végétarien">🥗 Végétarien</option>
+              <option value="Soupe">🍲 Soupe</option>
+              <option value="Autre">🍽️ Autre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="m_temps">Temps de préparation (min)</label>
+            <input type="number" id="m_temps" min="0" step="5" placeholder="30">
+          </div>
+        </div>
+        <div class="field">
+          <label for="m_personnes">Nombre de personnes</label>
+          <input type="number" id="m_personnes" min="1" step="1" value="4">
+        </div>
+
+        <div class="section-label"><span class="em">🧺</span> Ingrédients</div>
+        <div id="ingredientRows"></div>
+        <button type="button" class="ghost-btn" id="addIngredientBtn">➕ Ajouter un ingrédient</button>
+
+        <div class="field" style="margin-top:16px;">
+          <label for="m_notes">Notes libres</label>
+          <textarea id="m_notes" placeholder="Astuces, variantes, souvenirs..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelMealForm">Annuler</button>
+          <button type="submit" class="btn-primary">💾 Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- Menus : bibliothèque de repas ---- -->
+  <div class="modal-backdrop" id="libraryModalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>📖 Choisir un repas</h2>
+        <button class="close-x" id="closeLibraryModal">✕</button>
+      </div>
+      <input type="text" id="librarySearch" placeholder="Rechercher un repas...">
+      <button type="button" class="ghost-btn" id="libraryNewMealBtn" style="margin:12px 0;">✨ Créer un nouveau repas</button>
+      <div id="libraryList"></div>
+    </div>
+  </div>
+
+  <!-- ---- Activités : créer / modifier une activité ---- -->
+  <div class="modal-backdrop" id="activityFormBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="activityFormTitle">✨ Nouvelle activité</h2>
+        <button class="close-x" id="closeActivityForm">✕</button>
+      </div>
+      <form id="activityForm">
+        <div class="field">
+          <label for="a_titre">Titre</label>
+          <input type="text" id="a_titre" required placeholder="Ex : Entraînement de basket">
+        </div>
+
+        <div class="field">
+          <label>Qui est concerné ? <small style="font-weight:500;">(plusieurs choix possibles)</small></label>
+          <div class="member-picker" id="memberPicker"><!-- rempli en JS --></div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="a_date">Date</label>
+            <input type="date" id="a_date" required>
+          </div>
+          <div class="field">
+            <label for="a_dateFin">Jusqu'au <small style="font-weight:500;">(facultatif)</small></label>
+            <input type="date" id="a_dateFin">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="a_lieu">Lieu</label>
+          <input type="text" id="a_lieu" placeholder="Ex : Gymnase communal">
+        </div>
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="a_journeeEntiere">
+          <span>🗓️ Toute la journée</span>
+        </label>
+
+        <div class="row2" id="timeRow">
+          <div class="field">
+            <label for="a_heureDebut">Heure de début</label>
+            <input type="time" id="a_heureDebut" required>
+          </div>
+          <div class="field">
+            <label for="a_heureFin">Heure de fin</label>
+            <input type="time" id="a_heureFin">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Couleur</label>
+          <div class="color-swatch-row" id="colorSwatchRow"><!-- rempli en JS --></div>
+        </div>
+
+        <div class="field">
+          <label for="a_recurrence">Répétition</label>
+          <select id="a_recurrence">
+            <option value="aucune">Ne se répète pas</option>
+            <option value="quotidien">Tous les jours</option>
+            <option value="hebdomadaire">Toutes les semaines</option>
+            <option value="mensuel">Tous les mois</option>
+            <option value="joursOuvrables">Jours ouvrables (lun-ven)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="a_description">Description</label>
+          <textarea id="a_description" placeholder="Détails, matériel à prévoir..."></textarea>
+        </div>
+
+        <div class="modal-actions" style="justify-content:space-between;">
+          <button type="button" class="btn-danger" id="deleteActivityBtn" style="display:none;">🗑️ Supprimer</button>
+          <div style="display:flex; gap:10px; margin-left:auto;">
+            <button type="button" class="btn-secondary" id="cancelActivityForm">Annuler</button>
+            <button type="submit" class="btn-primary">💾 Enregistrer</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- Courses : modifier un article ---- -->
+  <div class="modal-backdrop" id="itemFormBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="itemFormTitle">Modifier l'article</h2>
+        <button class="close-x" id="closeItemForm">✕</button>
+      </div>
+      <form id="itemForm">
+        <div class="field">
+          <label for="i_nom">Nom</label>
+          <input type="text" id="i_nom" required>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="i_quantite">Quantité</label>
+            <input type="number" id="i_quantite" min="0" step="0.5">
+          </div>
+          <div class="field">
+            <label for="i_unite">Unité</label>
+            <select id="i_unite"><!-- rempli en JS --></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="i_categorie">Catégorie</label>
+          <select id="i_categorie"><!-- rempli en JS --></select>
+        </div>
+        <div class="field">
+          <label for="i_magasin">Magasin</label>
+          <input type="text" id="i_magasin" placeholder="Ex : Delhaize">
+        </div>
+        <div class="field">
+          <label for="i_note">Note</label>
+          <textarea id="i_note" placeholder="Marque préférée, rayon..."></textarea>
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="i_prioritaire">
+          <span>⭐ Article prioritaire</span>
+        </label>
+
+        <div class="modal-actions" style="justify-content:space-between;">
+          <button type="button" class="btn-danger" id="deleteItemBtn">🗑️ Supprimer</button>
+          <div style="display:flex; gap:10px; margin-left:auto;">
+            <button type="button" class="btn-secondary" id="cancelItemForm">Annuler</button>
+            <button type="submit" class="btn-primary">💾 Enregistrer</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ---- Projets : détail d'un projet ---- -->
+  <div class="modal-backdrop" id="projectDetailBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="projectDetailTitle">Projet</h2>
+        <button class="close-x" id="closeProjectDetail">✕</button>
+      </div>
+
+      <div class="score-panel" id="projectDetailScorePanel"></div>
+      <div class="detail-meta-grid" id="projectDetailMetaGrid"></div>
+
+      <div class="section-label"><span class="em">🚦</span> Statut</div>
+      <div class="status-select-row" id="projectStatusRow">
+        <button type="button" class="status-btn" data-status="En attente">🕒 En attente</button>
+        <button type="button" class="status-btn" data-status="En cours">🚧 En cours</button>
+        <button type="button" class="status-btn" data-status="Terminé">✅ Terminé</button>
+        <button type="button" class="status-btn" data-status="Abandonné">🗃️ Abandonné</button>
+      </div>
+
+      <div class="section-label"><span class="em">✅</span> Checklist</div>
+      <div id="projectChecklistItems"></div>
+      <div class="add-row">
+        <input type="text" id="newProjectChecklistInput" placeholder="Ajouter une étape...">
+        <button type="button" class="ghost-btn" id="addProjectChecklistBtn">➕</button>
+      </div>
+
+      <div class="section-label"><span class="em">🗓️</span> Dates importantes</div>
+      <div id="projectDatesItems"></div>
+      <div class="add-row">
+        <input type="text" id="newProjectDateLabel" placeholder="Libellé (ex : Achat du matériel)" style="flex:2;">
+        <input type="date" id="newProjectDateValue" style="flex:1;">
+        <button type="button" class="ghost-btn" id="addProjectDateBtn">➕</button>
+      </div>
+
+      <div class="section-label"><span class="em">🗒️</span> Notes</div>
+      <textarea class="notes-box" id="projectNotesBox" placeholder="Toutes les petites pensées au fil du projet..."></textarea>
+
+      <div class="modal-actions" style="justify-content:space-between; flex-wrap:wrap;">
+        <button type="button" class="btn-danger" id="deleteProjectBtn">🗑️ Supprimer</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-left:auto;">
+          <button type="button" class="ghost-btn" id="exportProjectPdfBtn">📄 Export PDF</button>
+          <button type="button" class="btn-secondary" id="editProjectBtn">✏️ Modifier</button>
+          <button type="button" class="btn-primary" id="saveProjectDetailBtn">💾 Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- Projets : créer / modifier un projet ---- -->
+  <div class="modal-backdrop" id="projectFormBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="projectFormTitle">💡 Nouveau projet</h2>
+        <button class="close-x" id="closeProjectForm">✕</button>
+      </div>
+
+      <form id="projectForm">
+        <div class="section-label"><span class="em">📝</span> L'idée en elle-même</div>
+        <div class="field">
+          <label for="f_nom">Nom du projet</label>
+          <input type="text" id="f_nom" required placeholder="Ex : Réaménager la terrasse">
+        </div>
+        <div class="field">
+          <label for="f_desc">Description en quelques lignes</label>
+          <textarea id="f_desc" placeholder="De quoi s'agit-il concrètement ?"></textarea>
+        </div>
+        <div class="field">
+          <label for="f_envie">Pourquoi ce projet me fait envie ?</label>
+          <textarea id="f_envie" placeholder="Ce qui donne des papillons dans le ventre..."></textarea>
+        </div>
+
+        <div class="section-label"><span class="em">📐</span> Un peu de cadrage</div>
+        <div class="row2">
+          <div class="field">
+            <label for="f_cout">Estimation du coût (€)</label>
+            <input type="number" id="f_cout" min="0" step="1" placeholder="0">
+          </div>
+          <div class="field">
+            <label for="f_temps">Temps estimé</label>
+            <select id="f_temps">
+              <option value="heures">Quelques heures</option>
+              <option value="jours">Quelques jours</option>
+              <option value="semaines">Quelques semaines</option>
+              <option value="mois">Quelques mois</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="f_qui">Qui est concerné ?</label>
+            <input type="text" id="f_qui" placeholder="Toute la famille, les enfants, juste moi...">
+          </div>
+          <div class="field">
+            <label for="f_date">Date d'encodage</label>
+            <input type="date" id="f_date">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Niveau d'enthousiasme</label>
+          <div class="slider-wrap">
+            <span class="slider-emoji" id="enthuEmoji">🙂</span>
+            <input type="range" id="f_enthu" min="1" max="10" value="6">
+            <span id="enthuVal" style="font-weight:700; min-width:22px;">6</span>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Utilité pour la famille</label>
+            <div class="slider-wrap">
+              <span class="slider-emoji" id="utilEmoji">🌱</span>
+              <input type="range" id="f_utilite" min="1" max="10" value="6">
+              <span id="utilVal" style="font-weight:700; min-width:22px;">6</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>C'est plutôt le bon moment ?</label>
+            <div class="slider-wrap">
+              <span class="slider-emoji" id="urgEmoji">⏳</span>
+              <input type="range" id="f_urgence" min="1" max="10" value="5">
+              <span id="urgVal" style="font-weight:700; min-width:22px;">5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Photo (facultatif)</label>
+          <div class="photo-upload" id="photoZone">
+            📷 Cliquez ou déposez une photo ici
+            <input type="file" id="f_photo" accept="image/*" style="display:none">
+            <img id="photoPreview" class="photo-preview" style="display:none;">
+          </div>
+        </div>
+
+        <div class="section-label"><span class="em">😄</span> Les questions qui comptent vraiment</div>
+        <div class="humor-block">
+          <div class="field">
+            <label>Est-ce que cette idée survivra encore dans une semaine ?</label>
+            <div class="choice-btns" data-group="survie">
+              <button type="button" class="choice-btn" data-value="oui">😌 Oui, certainement</button>
+              <button type="button" class="choice-btn" data-value="peutetre">🤔 Peut-être</button>
+              <button type="button" class="choice-btn" data-value="non">😅 Probablement pas</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Une envie de 23h ou une vraie idée ?</label>
+            <div class="choice-btns" data-group="type23h">
+              <button type="button" class="choice-btn" data-value="23h">🌙 Envie de 23h</button>
+              <button type="button" class="choice-btn" data-value="vraie">☀️ Vraie idée réfléchie</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>David va-t-il soupirer en lisant ce projet ? 😅</label>
+            <div class="choice-btns" data-group="david">
+              <button type="button" class="choice-btn" data-value="adore">😍 Il va adorer</button>
+              <button type="button" class="choice-btn" data-value="neutre">😐 Ça va aller</button>
+              <button type="button" class="choice-btn" data-value="soupir">😅 Petit soupir</button>
+              <button type="button" class="choice-btn" data-value="panique">😱 Grand soupir</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Combien de vidéos Pinterest ont inspiré cette idée ?</label>
+            <div class="choice-btns" data-group="pinterest">
+              <button type="button" class="choice-btn" data-value="0">0️⃣ Aucune</button>
+              <button type="button" class="choice-btn" data-value="peu">📌 1 à 5</button>
+              <button type="button" class="choice-btn" data-value="beaucoup">📌📌 6 à 20</button>
+              <button type="button" class="choice-btn" data-value="perdu">🌀 Perdu le compte</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="projectScorePreview" class="score-panel" style="display:none;"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelProjectForm">Annuler</button>
+          <button type="submit" class="btn-primary">💾 Enregistrer l'idée</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div><!-- /#appShell -->
+
+<script type="module">
+/* ============================================================
+   FIREBASE — initialisation (SDK Web modulaire v9+)
+   Configuration inchangée : même projet, même base Firestore,
+   mêmes comptes autorisés que dans la version précédente.
+   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyChUmuhiDo31nqGUWTmM6dXHe_Ea5-If88",
+  authDomain: "projet-famille-1e8a7.firebaseapp.com",
+  projectId: "projet-famille-1e8a7",
+  storageBucket: "projet-famille-1e8a7.firebasestorage.app",
+  messagingSenderId: "573062475752",
+  appId: "1:573062475752:web:b48b3c4231ccab22047e5d",
+  measurementId: "G-9MLBB9EJ5E"
+};
+
+// Adresses e-mail autorisées à accéder au portail familial.
+const AUTHORIZED_EMAILS = [
+  "beidavid4@gmail.com",
+  "prequile@gmail.com"
+];
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
+
+// Collection existante du module Projets (ancien "carnet d'idées créatives").
+// On ne fait ici QUE de la lecture, pour le compteur du tableau de bord :
+// aucune donnée de ce module n'est créée, modifiée ou supprimée par ce socle.
+const ideasCollectionRef = collection(db, "idees");
+
+// Module Menus de la semaine : bibliothèque de repas réutilisables,
+// et affectation d'un repas à un jour précis d'une semaine donnée.
+const mealsCollectionRef = collection(db, "repas");
+const planningCollectionRef = collection(db, "planningRepas");
+
+// Module Activités : membres de la famille + activités du calendrier.
+const membresCollectionRef = collection(db, "membres");
+const activitesCollectionRef = collection(db, "activites");
+
+// Module Liste de courses : articles partagés, ajoutés manuellement ou
+// (plus tard) automatiquement depuis un repas planifié ou un projet.
+const coursesCollectionRef = collection(db, "courses");
+
+/* ============================================================
+   NAVIGATION — un routeur minimal entre les vues
+   Chaque bouton (tuile, barre de navigation, retour) porte un
+   attribut data-view ; c'est la seule chose à savoir pour brancher
+   un futur module : lui donner un id="view-xxx" + un bouton data-view="xxx".
+   ============================================================ */
+const views = document.querySelectorAll(".view");
+const navButtons = document.querySelectorAll(".nav-btn");
+
+function showView(name){
+  views.forEach(v => { v.hidden = (v.id !== "view-" + name); });
+  navButtons.forEach(b => b.classList.toggle("active", b.dataset.view === name));
+  window.scrollTo({ top:0, behavior:"auto" });
+}
+
+document.querySelectorAll("[data-view]").forEach(el=>{
+  el.addEventListener("click", ()=> showView(el.dataset.view));
+});
+
+/* ============================================================
+   TABLEAU DE BORD — résumé du jour
+   ============================================================ */
+function renderTodayHeader(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("fr-BE", { weekday:"long", day:"numeric", month:"long" });
+  document.getElementById("todayDate").textContent = dateStr;
+}
+// Remarque d'architecture : le comptage "Projets en cours" du tableau de bord
+// était auparavant un onSnapshot dédié ici. Il est désormais géré directement
+// par le module Projets (startProjectsSync / renderProjectsOnDashboard),
+// qui est la seule source de vérité sur la collection "idees" — évite une
+// double écoute Firestore sur la même collection.
+
+/* ============================================================
+   MODULE : MENUS DE LA SEMAINE
+   ============================================================ */
+const DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+const DAY_LABELS = { lundi:"Lundi", mardi:"Mardi", mercredi:"Mercredi", jeudi:"Jeudi", vendredi:"Vendredi", samedi:"Samedi", dimanche:"Dimanche" };
+const MEAL_CATEGORIES = [
+  { value:"Viande",     icon:"🍖" },
+  { value:"Poisson",    icon:"🐟" },
+  { value:"Pâtes",      icon:"🍝" },
+  { value:"Végétarien", icon:"🥗" },
+  { value:"Soupe",      icon:"🍲" },
+  { value:"Autre",      icon:"🍽️" }
+];
+const INGREDIENT_UNITS = ["pièce(s)","g","kg","ml","l","c. à soupe","c. à café","tranche(s)","botte(s)","pincée"];
+
+function categoryIcon(cat){
+  const found = MEAL_CATEGORIES.find(c => c.value === cat);
+  return found ? found.icon : "🍽️";
+}
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str ?? "";
+  return d.innerHTML;
+}
+function escapeAttr(str){
+  return (str ?? "").toString().replace(/"/g, "&quot;");
+}
+
+// -- semaine affichée : lundi de la semaine + identifiant ISO (ex. "2026-W29") --
+function getMonday(date){
+  const d = new Date(date);
+  const day = (d.getDay() + 6) % 7; // lundi = 0
+  d.setDate(d.getDate() - day);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function getISOWeekId(date){
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+  const fDayNum = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - fDayNum + 3);
+  const weekNum = 1 + Math.round((d - firstThursday) / (7 * 86400000));
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2,"0")}`;
+}
+function formatWeekRange(monday){
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+  const opts = { day:"numeric", month:"long" };
+  return `Semaine du ${monday.toLocaleDateString("fr-BE", opts)} au ${sunday.toLocaleDateString("fr-BE", opts)}`;
+}
+
+let currentWeekStart = getMonday(new Date());
+let currentWeekId = getISOWeekId(currentWeekStart);
+let meals = [];             // bibliothèque de repas (collection "repas")
+let planning = [];          // affectations jour/semaine (collection "planningRepas")
+let selectedDay = null;     // jour actuellement ouvert dans la fenêtre modale
+let mealFormMode = null;    // 'createAndAssign' | 'editMeal'
+let mealFormMealId = null;
+let ingredientRowCount = 0;
+let unsubscribeMeals = null;
+let unsubscribePlanning = null;
+
+function startMenusSync(){
+  if(!unsubscribeMeals){
+    unsubscribeMeals = onSnapshot(mealsCollectionRef, (snapshot)=>{
+      meals = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+      meals.sort((a,b) => (a.nom||"").localeCompare(b.nom||"", "fr"));
+      renderDaysGrid();
+      renderLibraryList();
+      renderTodaysMealOnDashboard();
+      refreshDayModalIfOpen();
+    }, (error)=>{
+      console.error("Erreur Firestore (bibliothèque de repas) :", error);
+      showToast("⚠️ Impossible de charger la bibliothèque de repas.");
+    });
+  }
+  if(!unsubscribePlanning){
+    unsubscribePlanning = onSnapshot(planningCollectionRef, (snapshot)=>{
+      planning = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderDaysGrid();
+      renderTodaysMealOnDashboard();
+      refreshDayModalIfOpen();
+    }, (error)=>{
+      console.error("Erreur Firestore (planning des repas) :", error);
+      showToast("⚠️ Impossible de charger le planning des repas.");
+    });
+  }
+}
+function stopMenusSync(){
+  if(unsubscribeMeals){ unsubscribeMeals(); unsubscribeMeals = null; }
+  if(unsubscribePlanning){ unsubscribePlanning(); unsubscribePlanning = null; }
+  meals = [];
+  planning = [];
+  document.getElementById("sumRepas").textContent = "Pas encore planifié";
+}
+
+// -- tableau de bord : repas prévu ce soir --
+function renderTodaysMealOnDashboard(){
+  const el = document.getElementById("sumRepas");
+  if(!el) return;
+  const today = new Date();
+  const todayDay = DAYS[(today.getDay() + 6) % 7];
+  const todayWeekId = getISOWeekId(getMonday(today));
+  const assignment = planning.find(p => p.weekId === todayWeekId && p.day === todayDay);
+  const meal = assignment ? meals.find(m => m.id === assignment.mealId) : null;
+  const mealName = meal ? meal.nom : (assignment ? assignment.mealNom : null);
+  el.textContent = mealName || "Pas encore planifié";
+}
+
+// -- grille des 7 jours --
+function renderDaysGrid(){
+  const grid = document.getElementById("daysGrid");
+  if(!grid) return;
+  grid.innerHTML = "";
+  DAYS.forEach((day, idx)=>{
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + idx);
+    const assignment = planning.find(p => p.weekId === currentWeekId && p.day === day);
+    const meal = assignment ? meals.find(m => m.id === assignment.mealId) : null;
+    const mealName = meal ? meal.nom : (assignment ? assignment.mealNom : null);
+    const icon = meal ? categoryIcon(meal.categorie) : "🍽️";
+
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "day-card " + (mealName ? "has-meal" : "is-empty");
+    card.innerHTML = `
+      <span class="day-card-label">${DAY_LABELS[day]}<small>${date.toLocaleDateString("fr-BE",{day:"numeric",month:"short"})}</small></span>
+      <span class="day-card-meal"><span class="meal-emoji">${icon}</span>${mealName ? escapeHtml(mealName) : "Aucun repas prévu"}</span>
+    `;
+    card.addEventListener("click", ()=> openDayModal(day));
+    grid.appendChild(card);
+  });
+  const label = document.getElementById("weekRangeLabel");
+  if(label) label.textContent = formatWeekRange(currentWeekStart);
+}
+
+document.getElementById("prevWeekBtn").addEventListener("click", ()=>{
+  currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+  currentWeekId = getISOWeekId(currentWeekStart);
+  renderDaysGrid();
+});
+document.getElementById("nextWeekBtn").addEventListener("click", ()=>{
+  currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+  currentWeekId = getISOWeekId(currentWeekStart);
+  renderDaysGrid();
+});
+document.getElementById("todayWeekBtn").addEventListener("click", ()=>{
+  currentWeekStart = getMonday(new Date());
+  currentWeekId = getISOWeekId(currentWeekStart);
+  renderDaysGrid();
+});
+
+// -- fenêtre modale : détail d'un jour --
+const dayModalBackdrop = document.getElementById("dayModalBackdrop");
+function openDayModal(day){
+  selectedDay = day;
+  document.getElementById("dayModalTitle").textContent = DAY_LABELS[day];
+  renderDayModalBody();
+  dayModalBackdrop.classList.add("open");
+}
+function closeDayModal(){
+  dayModalBackdrop.classList.remove("open");
+  selectedDay = null;
+}
+document.getElementById("closeDayModal").addEventListener("click", closeDayModal);
+dayModalBackdrop.addEventListener("click", (e)=>{ if(e.target === dayModalBackdrop) closeDayModal(); });
+function refreshDayModalIfOpen(){
+  if(dayModalBackdrop.classList.contains("open") && selectedDay) renderDayModalBody();
+}
+
+function renderDayModalBody(){
+  const body = document.getElementById("dayModalBody");
+  const assignment = planning.find(p => p.weekId === currentWeekId && p.day === selectedDay);
+  const meal = assignment ? meals.find(m => m.id === assignment.mealId) : null;
+
+  if(!assignment){
+    body.innerHTML = `
+      <p style="color:var(--ink-soft); margin-top:0;">Aucun repas prévu pour ce soir-là.</p>
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:18px;">
+        <button type="button" class="btn-primary" id="btnPickExisting">📖 Choisir un repas existant</button>
+        <button type="button" class="btn-secondary" id="btnCreateNew">✨ Créer un nouveau repas</button>
+      </div>
+    `;
+    document.getElementById("btnPickExisting").addEventListener("click", openLibraryModal);
+    document.getElementById("btnCreateNew").addEventListener("click", ()=> openMealForm("createAndAssign"));
+    return;
+  }
+
+  const mealName = meal ? meal.nom : (assignment.mealNom || "Repas");
+  const icon = meal ? categoryIcon(meal.categorie) : "🍽️";
+  const metaParts = meal ? [meal.categorie, meal.tempsPreparation ? meal.tempsPreparation+" min" : null, meal.nbPersonnes ? meal.nbPersonnes+" pers." : null].filter(Boolean) : [];
+  const ingredientsHtml = (meal?.ingredients || []).map(ing =>
+    `<li>${escapeHtml(ing.nom)}${ing.quantite != null ? " — " + ing.quantite : ""} ${escapeHtml(ing.unite || "")}</li>`
+  ).join("");
+
+  body.innerHTML = `
+    <div class="meal-detail-card">
+      <div class="meal-detail-head">
+        <span class="meal-emoji" style="font-size:1.8rem;">${icon}</span>
+        <div>
+          <div class="meal-detail-name">${escapeHtml(mealName)}</div>
+          ${metaParts.length ? `<div class="meal-detail-meta">${metaParts.join(" · ")}</div>` : ""}
+        </div>
+      </div>
+      ${ingredientsHtml ? `<div class="section-label"><span class="em">🧺</span> Ingrédients</div><ul class="ingredient-list">${ingredientsHtml}</ul>` : ""}
+      ${meal?.notes ? `<div class="section-label"><span class="em">🗒️</span> Notes</div><p style="color:var(--ink-soft); font-size:0.9rem; margin:0;">${escapeHtml(meal.notes)}</p>` : ""}
+    </div>
+    <div class="day-modal-actions">
+      <button type="button" class="btn-secondary" id="btnChangeMeal">🔁 Changer</button>
+      <button type="button" class="btn-secondary" id="btnEditMeal">✏️ Modifier</button>
+      <button type="button" class="btn-danger" id="btnRemoveAssignment">🗑️ Retirer</button>
+    </div>
+  `;
+  document.getElementById("btnChangeMeal").addEventListener("click", openLibraryModal);
+  document.getElementById("btnEditMeal").addEventListener("click", ()=> openMealForm("editMeal", assignment.mealId));
+  document.getElementById("btnRemoveAssignment").addEventListener("click", removeAssignment);
+}
+
+async function removeAssignment(){
+  if(!confirm("Retirer le repas prévu pour ce jour ?")) return;
+  try{
+    await deleteDoc(doc(db, "planningRepas", `${currentWeekId}_${selectedDay}`));
+    showToast("Repas retiré de ce jour. 👋");
+    closeDayModal();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de la suppression.");
+  }
+}
+
+async function assignMealToSelectedDay(mealId, mealNom){
+  try{
+    await setDoc(doc(db, "planningRepas", `${currentWeekId}_${selectedDay}`), {
+      weekId: currentWeekId,
+      day: selectedDay,
+      mealId,
+      mealNom,
+      assignedBy: auth.currentUser?.email || null,
+      updatedAt: new Date().toISOString()
+    });
+    showToast("Repas ajouté au menu ! 🍽️");
+    closeLibraryModal();
+    closeDayModal();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de l'enregistrement.");
+  }
+}
+
+// -- fenêtre modale : bibliothèque de repas --
+const libraryModalBackdrop = document.getElementById("libraryModalBackdrop");
+function openLibraryModal(){
+  document.getElementById("librarySearch").value = "";
+  renderLibraryList();
+  libraryModalBackdrop.classList.add("open");
+}
+function closeLibraryModal(){
+  libraryModalBackdrop.classList.remove("open");
+}
+document.getElementById("closeLibraryModal").addEventListener("click", closeLibraryModal);
+libraryModalBackdrop.addEventListener("click", (e)=>{ if(e.target === libraryModalBackdrop) closeLibraryModal(); });
+document.getElementById("librarySearch").addEventListener("input", renderLibraryList);
+document.getElementById("libraryNewMealBtn").addEventListener("click", ()=> openMealForm("createAndAssign"));
+
+function renderLibraryList(){
+  const list = document.getElementById("libraryList");
+  if(!list) return;
+  const search = (document.getElementById("librarySearch")?.value || "").trim().toLowerCase();
+  const filtered = search ? meals.filter(m => (m.nom||"").toLowerCase().includes(search)) : meals;
+
+  if(filtered.length === 0){
+    list.innerHTML = `<p style="color:var(--ink-soft); text-align:center; padding:20px 0;">Aucun repas ${search ? "ne correspond à cette recherche" : "dans la bibliothèque pour l'instant"}.</p>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(meal => `
+    <div class="library-item">
+      <div class="library-item-main" data-id="${meal.id}">
+        <span class="meal-emoji">${categoryIcon(meal.categorie)}</span>
+        <div>
+          <div class="library-item-name">${escapeHtml(meal.nom)}</div>
+          <div class="library-item-meta">${[meal.tempsPreparation ? meal.tempsPreparation+" min" : null, meal.nbPersonnes ? meal.nbPersonnes+" pers." : null].filter(Boolean).join(" · ")}</div>
+        </div>
+      </div>
+      <button type="button" class="library-item-delete" data-id="${meal.id}" aria-label="Supprimer de la bibliothèque">🗑️</button>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".library-item-main").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const meal = meals.find(m => m.id === el.dataset.id);
+      if(meal) assignMealToSelectedDay(meal.id, meal.nom);
+    });
+  });
+  list.querySelectorAll(".library-item-delete").forEach(btn=>{
+    btn.addEventListener("click", async (e)=>{
+      e.stopPropagation();
+      if(!confirm("Supprimer définitivement ce repas de la bibliothèque ?")) return;
+      try{
+        await deleteDoc(doc(db, "repas", btn.dataset.id));
+        showToast("Repas supprimé de la bibliothèque.");
+      }catch(err){
+        console.error(err);
+        showToast("⚠️ Erreur lors de la suppression.");
+      }
+    });
+  });
+}
+
+// -- fenêtre modale : créer / modifier un repas --
+const mealFormBackdrop = document.getElementById("mealFormBackdrop");
+const mealForm = document.getElementById("mealForm");
+
+function addIngredientRow(ing){
+  const idx = ingredientRowCount++;
+  const row = document.createElement("div");
+  row.className = "ingredient-row";
+  row.dataset.idx = idx;
+  row.innerHTML = `
+    <input type="text" class="ing-nom" placeholder="Nom (ex : Tomates)" value="${ing ? escapeAttr(ing.nom) : ""}">
+    <input type="number" class="ing-qte" placeholder="Qté" min="0" step="0.5" value="${ing && ing.quantite != null ? ing.quantite : ""}">
+    <select class="ing-unite">
+      ${INGREDIENT_UNITS.map(u => `<option value="${u}" ${ing && ing.unite === u ? "selected" : ""}>${u}</option>`).join("")}
+    </select>
+    <button type="button" class="ing-remove" aria-label="Supprimer l'ingrédient">✕</button>
+  `;
+  row.querySelector(".ing-remove").addEventListener("click", ()=> row.remove());
+  document.getElementById("ingredientRows").appendChild(row);
+}
+document.getElementById("addIngredientBtn").addEventListener("click", ()=> addIngredientRow());
+
+function openMealForm(mode, mealId){
+  mealFormMode = mode;
+  mealFormMealId = mealId || null;
+  mealForm.reset();
+  document.getElementById("ingredientRows").innerHTML = "";
+  ingredientRowCount = 0;
+
+  if(mode === "editMeal" && mealId){
+    const meal = meals.find(m => m.id === mealId);
+    document.getElementById("mealFormTitle").textContent = "✏️ Modifier ce repas";
+    if(meal){
+      document.getElementById("m_nom").value = meal.nom || "";
+      document.getElementById("m_categorie").value = meal.categorie || "Autre";
+      document.getElementById("m_temps").value = meal.tempsPreparation ?? "";
+      document.getElementById("m_personnes").value = meal.nbPersonnes ?? 4;
+      document.getElementById("m_notes").value = meal.notes || "";
+      (meal.ingredients || []).forEach(ing => addIngredientRow(ing));
+    }
+  } else {
+    document.getElementById("mealFormTitle").textContent = "✨ Nouveau repas";
+    document.getElementById("m_personnes").value = 4;
+    addIngredientRow();
+  }
+  mealFormBackdrop.classList.add("open");
+}
+function closeMealForm(){
+  mealFormBackdrop.classList.remove("open");
+}
+document.getElementById("closeMealForm").addEventListener("click", closeMealForm);
+document.getElementById("cancelMealForm").addEventListener("click", closeMealForm);
+mealFormBackdrop.addEventListener("click", (e)=>{ if(e.target === mealFormBackdrop) closeMealForm(); });
+
+mealForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const nom = document.getElementById("m_nom").value.trim();
+  if(!nom){ alert("Le repas a besoin d'un nom ! 😊"); return; }
+
+  const ingredients = Array.from(document.querySelectorAll("#ingredientRows .ingredient-row")).map(row => ({
+    nom: row.querySelector(".ing-nom").value.trim(),
+    quantite: row.querySelector(".ing-qte").value === "" ? null : Number(row.querySelector(".ing-qte").value),
+    unite: row.querySelector(".ing-unite").value
+  })).filter(ing => ing.nom);
+
+  const tempsVal = document.getElementById("m_temps").value;
+  const personnesVal = document.getElementById("m_personnes").value;
+  const data = {
+    nom,
+    categorie: document.getElementById("m_categorie").value,
+    tempsPreparation: tempsVal === "" ? null : Number(tempsVal),
+    nbPersonnes: personnesVal === "" ? null : Number(personnesVal),
+    ingredients,
+    notes: document.getElementById("m_notes").value.trim()
+  };
+
+  try{
+    if(mealFormMode === "editMeal" && mealFormMealId){
+      await updateDoc(doc(db, "repas", mealFormMealId), data);
+      showToast("Repas mis à jour ! 📝");
+      closeMealForm();
+    } else {
+      const newDocRef = await addDoc(mealsCollectionRef, {
+        ...data,
+        favori: false,   // réservé pour une future fonctionnalité "favoris"
+        photoUrl: null,  // réservé pour une future fonctionnalité "photo"
+        createdAt: new Date().toISOString(),
+        createdBy: auth.currentUser?.email || null
+      });
+      showToast("Nouveau repas créé ! ✨");
+      closeMealForm();
+      if(mealFormMode === "createAndAssign" && selectedDay){
+        await assignMealToSelectedDay(newDocRef.id, nom);
+      }
+    }
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur Firestore lors de l'enregistrement du repas.");
+  }
+});
+
+/* ============================================================
+   MODULE : ACTIVITÉS FAMILIALES
+   ============================================================ */
+
+// Membres à créer automatiquement si la collection "membres" est vide.
+// Identifiants fixes pour rester stables dans le temps.
+const DEFAULT_MEMBERS = [
+  { id:"david",  nom:"David",  avatar:"👨", couleur:"#FF8C6B", actif:true },
+  { id:"pauline",nom:"Pauline",avatar:"👩", couleur:"#C9AEE4", actif:true },
+  { id:"victor", nom:"Victor", avatar:"👦", couleur:"#9AC7D9", actif:true },
+  { id:"suzon",  nom:"Suzon",  avatar:"👧", couleur:"#F4C95D", actif:true },
+  { id:"barney", nom:"Barney", avatar:"🐶", couleur:"#8FAE8B", actif:true },
+  { id:"pipa",   nom:"Pipa",   avatar:"🐶", couleur:"#D98BB5", actif:true }
+];
+const ACTIVITY_COLORS = ["#FF8C6B","#F4C95D","#8FAE8B","#9AC7D9","#C9AEE4","#E96A48","#D98BB5","#7BB88E"];
+const RECURRENCE_LABELS = {
+  aucune:"Ne se répète pas", quotidien:"Tous les jours", hebdomadaire:"Toutes les semaines",
+  mensuel:"Tous les mois", joursOuvrables:"Jours ouvrables"
+};
+const WEEKDAY_LABELS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+
+let membres = [];
+let activites = [];
+let membresSeeded = false;
+let unsubscribeMembres = null;
+let unsubscribeActivites = null;
+let activitesCurrentSubview = "today";
+let actWeekStart = getMonday(new Date());
+let editingActivityId = null;
+let formSelectedMemberIds = new Set();
+let formSelectedColor = ACTIVITY_COLORS[0];
+
+/* ---- date/heure : petits utilitaires locaux au module ---- */
+function toDateKey(date){
+  // format AAAA-MM-JJ en heure locale (pas d'UTC, pour éviter les décalages de fuseau)
+  const y = date.getFullYear(), m = String(date.getMonth()+1).padStart(2,"0"), d = String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+function parseDateKey(key){
+  const [y,m,d] = key.split("-").map(Number);
+  return new Date(y, m-1, d);
+}
+function isSameDay(d1, d2){ return toDateKey(d1) === toDateKey(d2); }
+
+/* ---- récurrence : une activité occupe-t-elle ce jour-là ? ---- */
+function occursOnDate(act, date){
+  if(!act.date) return false;
+  const start = parseDateKey(act.date);
+  const startMid = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const dateMid  = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  // Plage de plusieurs jours (ex : vacances à la mer) : prioritaire sur la récurrence.
+  if(act.dateFin){
+    const end = parseDateKey(act.dateFin);
+    const endMid = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    return dateMid >= startMid && dateMid <= endMid;
+  }
+
+  if(dateMid < startMid) return false;
+  const type = act.activiteRecurrente?.type || "aucune";
+  switch(type){
+    case "quotidien":       return true;
+    case "joursOuvrables":  return dateMid.getDay() >= 1 && dateMid.getDay() <= 5;
+    case "hebdomadaire":    return dateMid.getDay() === startMid.getDay();
+    case "mensuel":         return dateMid.getDate() === startMid.getDate();
+    default:                return isSameDay(dateMid, startMid); // "aucune"
+  }
+}
+function getActivitiesForDate(date){
+  // Point d'extension : demain, on pourra fusionner ici les repas, échéances de
+  // projets, jour de courses ou anniversaires dans le même tableau normalisé.
+  return activites
+    .filter(act => occursOnDate(act, date))
+    .sort((a,b)=>{
+      const aAllDay = a.journeeEntiere ? 0 : 1;
+      const bAllDay = b.journeeEntiere ? 0 : 1;
+      if(aAllDay !== bAllDay) return aAllDay - bAllDay; // les activités "toute la journée" en premier
+      return (a.heureDebut||"").localeCompare(b.heureDebut||"");
+    });
+}
+function getMember(id){ return membres.find(m => m.id === id) || null; }
+// Compatibilité : les activités créées avant le multi-membre n'ont qu'un "membreId".
+function getActivityMemberIds(act){
+  if(Array.isArray(act.membreIds)) return act.membreIds;
+  return act.membreId ? [act.membreId] : [];
+}
+function getActivityMembers(act){
+  return getActivityMemberIds(act).map(getMember).filter(Boolean);
+}
+
+/* ---- synchronisation Firestore ---- */
+function startActivitesSync(){
+  if(!unsubscribeMembres){
+    unsubscribeMembres = onSnapshot(membresCollectionRef, async (snapshot)=>{
+      membres = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+      if(snapshot.empty && !membresSeeded){
+        membresSeeded = true; // garde-fou : on ne tente le seed qu'une fois par session
+        try{
+          for(const m of DEFAULT_MEMBERS){
+            await setDoc(doc(db, "membres", m.id), m);
+          }
+        }catch(err){ console.error("Erreur lors de l'initialisation des membres :", err); }
+      }
+      renderMemberPicker();
+      renderActiveSubview();
+      renderNextActivityOnDashboard();
+    }, (error)=>{
+      console.error("Erreur Firestore (membres) :", error);
+    });
+  }
+  if(!unsubscribeActivites){
+    unsubscribeActivites = onSnapshot(activitesCollectionRef, (snapshot)=>{
+      activites = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderActiveSubview();
+      renderNextActivityOnDashboard();
+    }, (error)=>{
+      console.error("Erreur Firestore (activités) :", error);
+    });
+  }
+}
+function stopActivitesSync(){
+  if(unsubscribeMembres){ unsubscribeMembres(); unsubscribeMembres = null; }
+  if(unsubscribeActivites){ unsubscribeActivites(); unsubscribeActivites = null; }
+  membres = []; activites = [];
+  const el = document.getElementById("sumActivite");
+  if(el) el.textContent = "Aucune programmée";
+}
+
+/* ---- tableau de bord : prochaine activité de la famille ---- */
+function formatTimeUntil(target){
+  const diffMs = target - new Date();
+  if(diffMs <= 0) return "en cours";
+  const diffMin = Math.round(diffMs/60000);
+  const days = Math.floor(diffMin/1440);
+  const hours = Math.floor((diffMin%1440)/60);
+  const mins = diffMin%60;
+  if(days >= 1) return `Dans ${days} j`;
+  if(hours >= 1) return `Dans ${hours}h${mins>0?String(mins).padStart(2,"0"):""}`;
+  return `Dans ${mins} min`;
+}
+function findNextActivity(){
+  const now = new Date();
+  for(let offset=0; offset<60; offset++){
+    const d = new Date(now); d.setDate(d.getDate()+offset); d.setHours(0,0,0,0);
+    // Les activités "toute la journée" n'ont pas d'heure : elles ne rentrent pas
+    // dans le compte à rebours, qui n'a de sens que pour des horaires précis.
+    const dayActs = getActivitiesForDate(d).filter(act => !act.journeeEntiere);
+    for(const act of dayActs){
+      const [h,m] = (act.heureDebut||"00:00").split(":").map(Number);
+      const when = new Date(d); when.setHours(h||0, m||0, 0, 0);
+      if(when > now) return { act, when };
+    }
+  }
+  return null;
+}
+function renderNextActivityOnDashboard(){
+  const el = document.getElementById("sumActivite");
+  if(!el) return;
+  const next = findNextActivity();
+  if(!next){ el.textContent = "Aucune programmée"; return; }
+  const members = getActivityMembers(next.act);
+  const icon = next.act.icone || members[0]?.avatar || "📌";
+  const names = members.length ? members.map(m => escapeHtml(m.nom)).join(", ") : "Famille";
+  el.innerHTML = `
+    <span style="display:block;">${icon} ${names}</span>
+    <span style="display:block; font-weight:600; font-size:0.92rem;">${escapeHtml(next.act.titre)}</span>
+    <span style="display:block; color:var(--coral-deep); font-size:0.85rem;">${formatTimeUntil(next.when)}</span>
+  `;
+}
+
+/* ---- bascule Aujourd'hui / Semaine ---- */
+document.querySelectorAll("#activitesViewToggle .toggle-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    activitesCurrentSubview = btn.dataset.subview;
+    document.querySelectorAll("#activitesViewToggle .toggle-btn").forEach(b => b.classList.toggle("active", b === btn));
+    document.getElementById("subview-today").hidden = activitesCurrentSubview !== "today";
+    document.getElementById("subview-week").hidden = activitesCurrentSubview !== "week";
+    renderActiveSubview();
+  });
+});
+function renderActiveSubview(){
+  if(activitesCurrentSubview === "today") renderTodaySubview();
+  else renderWeekSubview();
+}
+
+/* ---- vue Aujourd'hui ---- */
+function renderTodaySubview(){
+  const dateEl = document.getElementById("todaySubviewDate");
+  const listEl = document.getElementById("todayActivitiesList");
+  if(!dateEl || !listEl) return;
+  const today = new Date();
+  dateEl.textContent = today.toLocaleDateString("fr-BE", { weekday:"long", day:"numeric", month:"long" });
+
+  const dayActs = getActivitiesForDate(today);
+  if(dayActs.length === 0){
+    listEl.innerHTML = `<div class="empty-today">🌤️ Aucune activité prévue aujourd'hui.</div>`;
+    return;
+  }
+  listEl.innerHTML = dayActs.map(act => renderActivityCardHtml(act)).join("");
+  listEl.querySelectorAll("[data-activity-id]").forEach(el=>{
+    el.addEventListener("click", ()=> openActivityForm("edit", el.dataset.activityId));
+  });
+}
+function renderActivityCardHtml(act){
+  const members = getActivityMembers(act);
+  const icon = act.icone || members[0]?.avatar || "📌";
+  const color = act.couleur || members[0]?.couleur || "var(--coral)";
+  const metaParts = [];
+  if(members.length) metaParts.push(members.map(m => `${m.avatar} ${escapeHtml(m.nom)}`).join(", "));
+  if(act.lieu) metaParts.push(`📍 ${escapeHtml(act.lieu)}`);
+  if(act.dateFin){
+    metaParts.push(`📆 jusqu'au ${parseDateKey(act.dateFin).toLocaleDateString("fr-BE",{day:"numeric",month:"short"})}`);
+  }
+  if(act.activiteRecurrente?.type && act.activiteRecurrente.type !== "aucune"){
+    metaParts.push(`🔁 ${RECURRENCE_LABELS[act.activiteRecurrente.type]}`);
+  }
+  const timeHtml = act.journeeEntiere
+    ? "Toute<small>la journée</small>"
+    : `${act.heureDebut||"--:--"}${act.heureFin ? `<small>→ ${act.heureFin}</small>` : ""}`;
+  return `
+    <div class="activity-card" style="--activity-color:${color};" data-activity-id="${act.id}">
+      <div class="activity-card-time">${timeHtml}</div>
+      <div class="activity-card-main">
+        <div class="activity-card-title"><span>${icon}</span>${escapeHtml(act.titre)}</div>
+        ${metaParts.length ? `<div class="activity-card-meta">${metaParts.map(p=>`<span>${p}</span>`).join("")}</div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+/* ---- vue Semaine ---- */
+function renderWeekSubview(){
+  const container = document.getElementById("weekColumns");
+  if(!container) return;
+  const label = document.getElementById("actWeekRangeLabel");
+  if(label) label.textContent = formatWeekRange(actWeekStart);
+
+  const today = new Date();
+  container.innerHTML = "";
+  WEEKDAY_LABELS.forEach((dayName, idx)=>{
+    const date = new Date(actWeekStart);
+    date.setDate(date.getDate()+idx);
+    const dayActs = getActivitiesForDate(date);
+
+    const col = document.createElement("div");
+    col.className = "week-day-column" + (isSameDay(date, today) ? " is-today" : "");
+    col.innerHTML = `
+      <div class="week-day-head">${dayName.charAt(0).toUpperCase()+dayName.slice(1)}<small>${date.toLocaleDateString("fr-BE",{day:"numeric",month:"short"})}</small></div>
+      ${dayActs.length === 0 ? `<div class="week-day-empty">—</div>` : dayActs.map(act=>{
+        const members = getActivityMembers(act);
+        const color = act.couleur || members[0]?.couleur || "var(--coral)";
+        const avatars = members.map(m => m.avatar).join("");
+        return `<div class="week-activity-chip" style="--activity-color:${color};" data-activity-id="${act.id}">
+          <span class="wac-time">${act.journeeEntiere ? "Toute la journée" : (act.heureDebut||"")}</span>
+          <span class="wac-title">${avatars} ${escapeHtml(act.titre)}</span>
+        </div>`;
+      }).join("")}
+      <button type="button" class="week-day-add" data-date="${toDateKey(date)}">➕ Ajouter</button>
+    `;
+    container.appendChild(col);
+  });
+
+  container.querySelectorAll("[data-activity-id]").forEach(el=>{
+    el.addEventListener("click", ()=> openActivityForm("edit", el.dataset.activityId));
+  });
+  container.querySelectorAll(".week-day-add").forEach(btn=>{
+    btn.addEventListener("click", ()=> openActivityForm("create", null, btn.dataset.date));
+  });
+}
+
+document.getElementById("actPrevWeekBtn").addEventListener("click", ()=>{
+  actWeekStart.setDate(actWeekStart.getDate()-7);
+  renderWeekSubview();
+});
+document.getElementById("actNextWeekBtn").addEventListener("click", ()=>{
+  actWeekStart.setDate(actWeekStart.getDate()+7);
+  renderWeekSubview();
+});
+document.getElementById("actTodayWeekBtn").addEventListener("click", ()=>{
+  actWeekStart = getMonday(new Date());
+  renderWeekSubview();
+});
+
+/* ---- sélecteur de membre (chips à sélection multiple) ---- */
+function renderMemberPicker(){
+  const picker = document.getElementById("memberPicker");
+  if(!picker) return;
+  const actifs = membres.filter(m => m.actif !== false);
+  picker.innerHTML = actifs.map(m => `
+    <button type="button" class="member-chip ${formSelectedMemberIds.has(m.id) ? "selected":""}" data-id="${m.id}" style="--chip-color:${m.couleur||"#FF8C6B"};">
+      ${m.avatar||"👤"} ${escapeHtml(m.nom)}
+    </button>
+  `).join("");
+  picker.querySelectorAll(".member-chip").forEach(chip=>{
+    chip.addEventListener("click", ()=>{
+      const id = chip.dataset.id;
+      if(formSelectedMemberIds.has(id)) formSelectedMemberIds.delete(id);
+      else formSelectedMemberIds.add(id);
+      chip.classList.toggle("selected", formSelectedMemberIds.has(id));
+    });
+  });
+}
+
+/* ---- sélecteur de couleur (pastilles) ---- */
+function renderColorSwatches(){
+  const row = document.getElementById("colorSwatchRow");
+  if(!row) return;
+  row.innerHTML = ACTIVITY_COLORS.map(c => `
+    <button type="button" class="color-swatch ${c===formSelectedColor?"selected":""}" data-color="${c}" style="background:${c};"></button>
+  `).join("");
+  row.querySelectorAll(".color-swatch").forEach(sw=>{
+    sw.addEventListener("click", ()=>{
+      formSelectedColor = sw.dataset.color;
+      row.querySelectorAll(".color-swatch").forEach(s => s.classList.toggle("selected", s===sw));
+    });
+  });
+}
+
+/* ---- fenêtre modale : créer / modifier une activité ---- */
+const activityFormBackdrop = document.getElementById("activityFormBackdrop");
+const activityForm = document.getElementById("activityForm");
+
+function openActivityForm(mode, activityId, presetDateKey){
+  editingActivityId = mode === "edit" ? activityId : null;
+  activityForm.reset();
+  document.getElementById("deleteActivityBtn").style.display = mode === "edit" ? "inline-flex" : "none";
+
+  if(mode === "edit"){
+    const act = activites.find(a => a.id === activityId);
+    document.getElementById("activityFormTitle").textContent = "✏️ Modifier l'activité";
+    if(act){
+      document.getElementById("a_titre").value = act.titre || "";
+      document.getElementById("a_date").value = act.date || toDateKey(new Date());
+      document.getElementById("a_dateFin").value = act.dateFin || "";
+      document.getElementById("a_lieu").value = act.lieu || "";
+      document.getElementById("a_journeeEntiere").checked = !!act.journeeEntiere;
+      document.getElementById("a_heureDebut").value = act.heureDebut || "";
+      document.getElementById("a_heureFin").value = act.heureFin || "";
+      document.getElementById("a_recurrence").value = act.activiteRecurrente?.type || "aucune";
+      document.getElementById("a_description").value = act.description || "";
+      formSelectedMemberIds = new Set(getActivityMemberIds(act));
+      formSelectedColor = act.couleur || getActivityMembers(act)[0]?.couleur || ACTIVITY_COLORS[0];
+    }
+  } else {
+    document.getElementById("activityFormTitle").textContent = "✨ Nouvelle activité";
+    document.getElementById("a_date").value = presetDateKey || toDateKey(new Date());
+    document.getElementById("a_dateFin").value = "";
+    document.getElementById("a_recurrence").value = "aucune";
+    document.getElementById("a_journeeEntiere").checked = false;
+    formSelectedMemberIds = new Set();
+    formSelectedColor = ACTIVITY_COLORS[0];
+  }
+
+  updateMultiDayState();
+  renderMemberPicker();
+  renderColorSwatches();
+  activityFormBackdrop.classList.add("open");
+}
+function updateTimeRowVisibility(){
+  const isAllDay = document.getElementById("a_journeeEntiere").checked;
+  document.getElementById("timeRow").style.display = isAllDay ? "none" : "grid";
+  document.getElementById("a_heureDebut").required = !isAllDay;
+}
+// Une activité sur plusieurs jours (ex : vacances) n'a pas d'horaire :
+// elle est automatiquement "toute la journée", et la case se verrouille
+// pour éviter une combinaison incohérente (plage + heure précise).
+function updateMultiDayState(){
+  const dateVal = document.getElementById("a_date").value;
+  const dateFinVal = document.getElementById("a_dateFin").value;
+  const isMultiDay = !!(dateFinVal && dateFinVal !== dateVal);
+  const checkbox = document.getElementById("a_journeeEntiere");
+  checkbox.disabled = isMultiDay;
+  if(isMultiDay) checkbox.checked = true;
+  updateTimeRowVisibility();
+}
+document.getElementById("a_journeeEntiere").addEventListener("change", updateTimeRowVisibility);
+document.getElementById("a_date").addEventListener("change", updateMultiDayState);
+document.getElementById("a_dateFin").addEventListener("change", updateMultiDayState);
+function closeActivityForm(){
+  activityFormBackdrop.classList.remove("open");
+  editingActivityId = null;
+}
+document.getElementById("fabAddActivity").addEventListener("click", ()=> openActivityForm("create"));
+document.getElementById("closeActivityForm").addEventListener("click", closeActivityForm);
+document.getElementById("cancelActivityForm").addEventListener("click", closeActivityForm);
+activityFormBackdrop.addEventListener("click", (e)=>{ if(e.target === activityFormBackdrop) closeActivityForm(); });
+
+document.getElementById("deleteActivityBtn").addEventListener("click", async ()=>{
+  if(!editingActivityId) return;
+  if(!confirm("Supprimer définitivement cette activité (et toutes ses occurrences si elle se répète) ?")) return;
+  try{
+    await deleteDoc(doc(db, "activites", editingActivityId));
+    showToast("Activité supprimée. 👋");
+    closeActivityForm();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de la suppression.");
+  }
+});
+
+activityForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const titre = document.getElementById("a_titre").value.trim();
+  if(!titre){ alert("L'activité a besoin d'un titre ! 😊"); return; }
+  if(formSelectedMemberIds.size === 0){ alert("Choisissez qui est concerné par cette activité. 😊"); return; }
+
+  const dateVal = document.getElementById("a_date").value;
+  const dateFinVal = document.getElementById("a_dateFin").value;
+  if(dateFinVal && dateFinVal < dateVal){
+    alert("La date « jusqu'au » doit être après la date de début. 😊");
+    return;
+  }
+  const isMultiDay = !!(dateFinVal && dateFinVal !== dateVal);
+  const isAllDay = document.getElementById("a_journeeEntiere").checked;
+  const nowIso = new Date().toISOString();
+  const data = {
+    titre,
+    membreIds: Array.from(formSelectedMemberIds),
+    date: dateVal,
+    dateFin: isMultiDay ? dateFinVal : null,
+    journeeEntiere: isAllDay,
+    heureDebut: isAllDay ? null : document.getElementById("a_heureDebut").value,
+    heureFin: isAllDay ? null : (document.getElementById("a_heureFin").value || null),
+    lieu: document.getElementById("a_lieu").value.trim(),
+    description: document.getElementById("a_description").value.trim(),
+    couleur: formSelectedColor,
+    activiteRecurrente: { type: document.getElementById("a_recurrence").value },
+    icone: null,              // réservé pour un futur sélecteur d'emoji par activité
+    notificationAvant: null,  // réservé pour la future gestion des notifications
+    modifieeLe: nowIso
+  };
+
+  try{
+    if(editingActivityId){
+      await updateDoc(doc(db, "activites", editingActivityId), data);
+      showToast("Activité mise à jour ! 📝");
+    } else {
+      await addDoc(activitesCollectionRef, {
+        ...data,
+        createur: auth.currentUser?.email || null,
+        creeeLe: nowIso
+      });
+      showToast("Activité ajoutée au calendrier ! 📅");
+    }
+    closeActivityForm();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur Firestore lors de l'enregistrement de l'activité.");
+  }
+});
+
+/* ============================================================
+   MODULE : LISTE DE COURSES
+   ============================================================ */
+const SHOPPING_UNITS = ["","pièce(s)","g","kg","ml","l","paquet(s)","boîte(s)","bouteille(s)","tranche(s)","botte(s)","pincée"];
+const CATEGORIES = [
+  { value:"Fruits et légumes",      icon:"🥦" },
+  { value:"Boucherie et poisson",   icon:"🥩" },
+  { value:"Produits frais",         icon:"🧀" },
+  { value:"Épicerie",               icon:"🥫" },
+  { value:"Boissons",               icon:"🥤" },
+  { value:"Surgelés",               icon:"🧊" },
+  { value:"Hygiène",                icon:"🧼" },
+  { value:"Maison",                 icon:"🧹" },
+  { value:"Animaux",                icon:"🐾" },
+  { value:"Autre",                  icon:"📦" }
+];
+function categoryIconCourses(cat){
+  const found = CATEGORIES.find(c => c.value === cat);
+  return found ? found.icon : "📦";
+}
+
+let courses = [];
+let unsubscribeCourses = null;
+let coursesFilter = "tous";       // 'tous' | 'aAcheter' | 'achetes' | 'prioritaires'
+let magasinFilter = "";
+let boughtSectionOpen = true;
+let editingItemId = null;
+let pendingDuplicate = null;      // { existingId, formData } en attente de décision utilisateur
+
+// Compare deux noms en ignorant majuscules, accents et espaces superflus.
+function normalizeName(str){
+  return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+function startCoursesSync(){
+  if(unsubscribeCourses) return;
+  unsubscribeCourses = onSnapshot(coursesCollectionRef, (snapshot)=>{
+    courses = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderCoursesView();
+    renderCoursesOnDashboard();
+    renderMagasinFilterOptions();
+  }, (error)=>{
+    console.error("Erreur Firestore (courses) :", error);
+    showToast("⚠️ Impossible de charger la liste de courses.");
+  });
+}
+function stopCoursesSync(){
+  if(unsubscribeCourses){ unsubscribeCourses(); unsubscribeCourses = null; }
+  courses = [];
+  const el = document.getElementById("sumCourses");
+  if(el) el.textContent = "0 article";
+}
+
+/* ---- tableau de bord ---- */
+function renderCoursesOnDashboard(){
+  const el = document.getElementById("sumCourses");
+  if(!el) return;
+  const count = courses.filter(it => !it.achete).length;
+  el.textContent = `${count} article${count > 1 ? "s" : ""}`;
+}
+
+/* ---- options des <select> (unité / catégorie) ---- */
+function fillUnitSelect(select, selected){
+  select.innerHTML = SHOPPING_UNITS.map(u => `<option value="${u}" ${u===selected?"selected":""}>${u || "—"}</option>`).join("");
+}
+function fillCategorySelect(select, selected){
+  select.innerHTML = CATEGORIES.map(c => `<option value="${c.value}" ${c.value===selected?"selected":""}>${c.icon} ${c.value}</option>`).join("");
+}
+fillUnitSelect(document.getElementById("qa_unite"), "");
+fillCategorySelect(document.getElementById("qa_categorie"), "Autre");
+fillUnitSelect(document.getElementById("i_unite"), "");
+fillCategorySelect(document.getElementById("i_categorie"), "Autre");
+
+function renderMagasinFilterOptions(){
+  const select = document.getElementById("magasinFilterSelect");
+  const magasins = [...new Set(courses.map(it => (it.magasin||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+  if(magasins.length === 0){
+    select.hidden = true;
+    magasinFilter = "";
+    return;
+  }
+  select.hidden = false;
+  const current = select.value;
+  select.innerHTML = `<option value="">Tous les magasins</option>` + magasins.map(m => `<option value="${escapeAttr(m)}" ${m===current?"selected":""}>${escapeHtml(m)}</option>`).join("");
+}
+document.getElementById("magasinFilterSelect").addEventListener("change", (e)=>{
+  magasinFilter = e.target.value;
+  renderCoursesView();
+});
+
+/* ---- filtres ---- */
+document.querySelectorAll("#coursesFilterBar .toggle-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    coursesFilter = btn.dataset.filter;
+    document.querySelectorAll("#coursesFilterBar .toggle-btn").forEach(b => b.classList.toggle("active", b===btn));
+    renderCoursesView();
+  });
+});
+document.getElementById("boughtSectionToggle").addEventListener("click", ()=>{
+  boughtSectionOpen = !boughtSectionOpen;
+  renderCoursesView();
+});
+
+/* ---- tri ---- */
+function sortToBuy(items){
+  return [...items].sort((a,b)=>{
+    if(!!a.prioritaire !== !!b.prioritaire) return a.prioritaire ? -1 : 1;
+    const catA = CATEGORIES.findIndex(c => c.value === a.categorie);
+    const catB = CATEGORIES.findIndex(c => c.value === b.categorie);
+    if(catA !== catB) return (catA===-1?999:catA) - (catB===-1?999:catB);
+    return (a.ordre||0) - (b.ordre||0);
+  });
+}
+function sortBought(items){
+  return [...items].sort((a,b) => (b.modifieLe||"").localeCompare(a.modifieLe||""));
+}
+
+/* ---- rendu principal ---- */
+function renderCoursesView(){
+  let list = courses.slice();
+  if(magasinFilter) list = list.filter(it => (it.magasin||"") === magasinFilter);
+  if(coursesFilter === "prioritaires") list = list.filter(it => it.prioritaire);
+
+  const toBuy = sortToBuy(list.filter(it => !it.achete));
+  const bought = sortBought(list.filter(it => it.achete));
+
+  document.getElementById("coursesSummary").innerHTML = `
+    <span>🛒 <b>${toBuy.length}</b> à acheter</span>
+    <span>✅ <b>${bought.length}</b> déjà acheté${bought.length>1?"s":""}</span>
+  `;
+
+  const showToBuySection = coursesFilter !== "achetes";
+  const showBoughtSection = coursesFilter !== "aAcheter";
+
+  const toBuySection = document.getElementById("toBuySection");
+  const boughtSection = document.getElementById("boughtSection");
+  toBuySection.hidden = !showToBuySection;
+  boughtSection.hidden = !showBoughtSection;
+
+  const toBuyList = document.getElementById("toBuyList");
+  if(showToBuySection){
+    if(toBuy.length === 0){
+      toBuyList.innerHTML = `<div class="empty-courses">🎉 Rien à acheter pour l'instant !</div>`;
+    } else {
+      toBuyList.innerHTML = CATEGORIES.map(cat=>{
+        const items = toBuy.filter(it => (it.categorie || "Autre") === cat.value);
+        if(items.length === 0) return "";
+        return `<div class="course-category-head">${cat.icon} ${escapeHtml(cat.value)}</div>` + items.map(renderCourseItemHtml).join("");
+      }).join("");
+    }
+  }
+
+  const boughtToggleBtn = document.getElementById("boughtSectionToggle");
+  const boughtList = document.getElementById("boughtList");
+  const cleanBtn = document.getElementById("cleanBoughtBtn");
+  if(showBoughtSection){
+    boughtToggleBtn.textContent = `Déjà dans le panier (${bought.length}) ${boughtSectionOpen ? "▾" : "▸"}`;
+    boughtList.hidden = !boughtSectionOpen;
+    cleanBtn.style.display = bought.length > 0 ? "inline-flex" : "none";
+    boughtList.innerHTML = bought.length === 0
+      ? `<div class="empty-courses">Le panier est vide pour l'instant.</div>`
+      : bought.map(renderCourseItemHtml).join("");
+  }
+
+  document.querySelectorAll(".course-check").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleItemBought(btn.dataset.id); });
+  });
+  document.querySelectorAll(".course-item").forEach(row=>{
+    row.addEventListener("click", ()=> openItemForm(row.dataset.id));
+  });
+}
+function renderCourseItemHtml(it){
+  const metaParts = [];
+  if(it.quantite || it.unite) metaParts.push(`${it.quantite ?? ""} ${escapeHtml(it.unite||"")}`.trim());
+  if(it.magasin) metaParts.push(`🏬 ${escapeHtml(it.magasin)}`);
+  if(it.note) metaParts.push(`🗒️ ${escapeHtml(it.note)}`);
+  return `
+    <div class="course-item ${it.achete?'is-bought':''} ${it.prioritaire?'is-priority':''}" data-id="${it.id}">
+      <button type="button" class="course-check ${it.achete?'checked':''}" data-id="${it.id}" aria-label="Cocher l'article">${it.achete?"✓":""}</button>
+      <div class="course-item-main">
+        <div class="course-item-name">${it.prioritaire?'<span class="priority-star">⭐</span>':''}${escapeHtml(it.nom)}</div>
+        ${metaParts.length ? `<div class="course-item-meta">${metaParts.map(p=>`<span>${p}</span>`).join("")}</div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+async function toggleItemBought(id){
+  const it = courses.find(c => c.id === id);
+  if(!it) return;
+  try{
+    await updateDoc(doc(db, "courses", id), { achete: !it.achete, modifieLe: new Date().toISOString() });
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de la mise à jour.");
+  }
+}
+
+/* ---- nettoyage des articles cochés ---- */
+document.getElementById("cleanBoughtBtn").addEventListener("click", async ()=>{
+  const bought = courses.filter(it => it.achete);
+  if(bought.length === 0) return;
+  if(!confirm(`Supprimer les ${bought.length} article(s) déjà dans le panier ? Les articles encore à acheter ne seront pas touchés.`)) return;
+  try{
+    const batch = writeBatch(db);
+    bought.forEach(it => batch.delete(doc(db, "courses", it.id)));
+    await batch.commit();
+    showToast("Panier nettoyé ! 🧹");
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors du nettoyage.");
+  }
+});
+
+/* ---- ajout ultra-rapide ---- */
+const quickAddForm = document.getElementById("quickAddForm");
+const quickAddAdvanced = document.getElementById("quickAddAdvanced");
+document.getElementById("qaToggleAdvanced").addEventListener("click", (e)=>{
+  quickAddAdvanced.hidden = !quickAddAdvanced.hidden;
+  e.currentTarget.classList.toggle("active", !quickAddAdvanced.hidden);
+});
+
+function hideDuplicateBanner(){
+  document.getElementById("duplicateBanner").hidden = true;
+  pendingDuplicate = null;
+}
+
+quickAddForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const nomInput = document.getElementById("qa_nom");
+  const nom = nomInput.value.trim();
+  if(!nom) return;
+
+  const quantite = document.getElementById("qa_quantite").value === "" ? null : Number(document.getElementById("qa_quantite").value);
+  const unite = document.getElementById("qa_unite").value || null;
+  const categorie = document.getElementById("qa_categorie").value || "Autre";
+  const magasin = document.getElementById("qa_magasin").value.trim();
+  const prioritaire = document.getElementById("qa_prioritaire").checked;
+
+  const normalized = normalizeName(nom);
+  const existing = courses.find(it => !it.achete && normalizeName(it.nom) === normalized);
+
+  if(existing){
+    // Article déjà présent dans la liste "à acheter" : on laisse la famille décider,
+    // jamais d'écrasement silencieux.
+    pendingDuplicate = { existingId: existing.id, quantite, unite, categorie, magasin, prioritaire };
+    const banner = document.getElementById("duplicateBanner");
+    banner.hidden = false;
+    banner.innerHTML = `
+      <span>« ${escapeHtml(existing.nom)} » est déjà dans la liste.</span>
+      <button type="button" class="dup-btn-merge" id="dupMergeBtn">➕ Augmenter la quantité</button>
+      <button type="button" class="dup-btn-new" id="dupNewBtn">🆕 Créer quand même</button>
+    `;
+    document.getElementById("dupMergeBtn").addEventListener("click", async ()=>{
+      const { existingId, quantite:q, unite:u } = pendingDuplicate;
+      const ex = courses.find(c => c.id === existingId);
+      const sameUnit = (ex.unite||"") === (u||"");
+      const newQuantite = sameUnit ? (Number(ex.quantite)||0) + (Number(q)||1) : (Number(ex.quantite)||0) + (Number(q)||1);
+      try{
+        await updateDoc(doc(db, "courses", existingId), {
+          quantite: newQuantite,
+          unite: sameUnit ? ex.unite : (ex.unite || u),
+          modifieLe: new Date().toISOString()
+        });
+        showToast("Quantité mise à jour ! ➕");
+      }catch(err){ console.error(err); showToast("⚠️ Erreur lors de la mise à jour."); }
+      resetQuickAddForm();
+      hideDuplicateBanner();
+    });
+    document.getElementById("dupNewBtn").addEventListener("click", async ()=>{
+      await createShoppingItem({ nom, quantite, unite, categorie, magasin, prioritaire });
+      resetQuickAddForm();
+      hideDuplicateBanner();
+    });
+    return;
+  }
+
+  await createShoppingItem({ nom, quantite, unite, categorie, magasin, prioritaire });
+  resetQuickAddForm();
+});
+
+function resetQuickAddForm(){
+  quickAddForm.reset();
+  quickAddAdvanced.hidden = true;
+  document.getElementById("qaToggleAdvanced").classList.remove("active");
+  fillUnitSelect(document.getElementById("qa_unite"), "");
+  fillCategorySelect(document.getElementById("qa_categorie"), "Autre");
+  document.getElementById("qa_nom").focus();
+}
+
+async function createShoppingItem({ nom, quantite, unite, categorie, magasin, prioritaire, source, sourceId }){
+  const nowIso = new Date().toISOString();
+  try{
+    await addDoc(coursesCollectionRef, {
+      nom,
+      quantite: quantite ?? null,
+      unite: unite || null,
+      categorie: categorie || "Autre",
+      achete: false,
+      source: source || "manuel",
+      sourceId: sourceId || null,
+      ajoutePar: auth.currentUser?.email || null,
+      ajouteLe: nowIso,
+      modifieLe: nowIso,
+      ordre: Date.now(),
+      note: "",
+      magasin: magasin || "",
+      prioritaire: !!prioritaire
+    });
+    showToast("Article ajouté ! 🛒");
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur Firestore lors de l'ajout de l'article.");
+  }
+}
+
+// ------------------------------------------------------------------
+// Point d'extension pour le module Menus (non branché à ce stade) :
+// permettra d'envoyer automatiquement les ingrédients d'un repas planifié
+// vers la liste de courses, par exemple depuis assignMealToSelectedDay().
+// Évite les doublons simples et fusionne les quantités si l'unité correspond.
+// ------------------------------------------------------------------
+async function addShoppingItemFromMeal(ingredient, mealId){
+  const normalized = normalizeName(ingredient.nom);
+  const existing = courses.find(it => !it.achete && normalizeName(it.nom) === normalized);
+  const nowIso = new Date().toISOString();
+  if(existing && (existing.unite||"") === (ingredient.unite||"")){
+    const newQuantite = (Number(existing.quantite)||0) + (Number(ingredient.quantite)||1);
+    await updateDoc(doc(db, "courses", existing.id), { quantite:newQuantite, modifieLe:nowIso });
+    return existing.id;
+  }
+  const docRef = await addDoc(coursesCollectionRef, {
+    nom: ingredient.nom,
+    quantite: ingredient.quantite ?? null,
+    unite: ingredient.unite || null,
+    categorie: ingredient.categorie || "Autre",
+    achete: false,
+    source: "menu",
+    sourceId: mealId || null,
+    ajoutePar: auth.currentUser?.email || null,
+    ajouteLe: nowIso,
+    modifieLe: nowIso,
+    ordre: Date.now(),
+    note: "",
+    magasin: "",
+    prioritaire: false
+  });
+  return docRef.id;
+}
+
+/* ---- fenêtre modale : modifier / supprimer un article ---- */
+const itemFormBackdrop = document.getElementById("itemFormBackdrop");
+const itemForm = document.getElementById("itemForm");
+
+function openItemForm(id){
+  const it = courses.find(c => c.id === id);
+  if(!it) return;
+  editingItemId = id;
+  document.getElementById("i_nom").value = it.nom || "";
+  document.getElementById("i_quantite").value = it.quantite ?? "";
+  fillUnitSelect(document.getElementById("i_unite"), it.unite || "");
+  fillCategorySelect(document.getElementById("i_categorie"), it.categorie || "Autre");
+  document.getElementById("i_magasin").value = it.magasin || "";
+  document.getElementById("i_note").value = it.note || "";
+  document.getElementById("i_prioritaire").checked = !!it.prioritaire;
+  itemFormBackdrop.classList.add("open");
+}
+function closeItemForm(){
+  itemFormBackdrop.classList.remove("open");
+  editingItemId = null;
+}
+document.getElementById("closeItemForm").addEventListener("click", closeItemForm);
+document.getElementById("cancelItemForm").addEventListener("click", closeItemForm);
+itemFormBackdrop.addEventListener("click", (e)=>{ if(e.target === itemFormBackdrop) closeItemForm(); });
+
+document.getElementById("deleteItemBtn").addEventListener("click", async ()=>{
+  if(!editingItemId) return;
+  if(!confirm("Supprimer définitivement cet article ?")) return;
+  try{
+    await deleteDoc(doc(db, "courses", editingItemId));
+    showToast("Article supprimé. 👋");
+    closeItemForm();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de la suppression.");
+  }
+});
+
+itemForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  if(!editingItemId) return;
+  const nom = document.getElementById("i_nom").value.trim();
+  if(!nom){ alert("L'article a besoin d'un nom ! 😊"); return; }
+
+  try{
+    await updateDoc(doc(db, "courses", editingItemId), {
+      nom,
+      quantite: document.getElementById("i_quantite").value === "" ? null : Number(document.getElementById("i_quantite").value),
+      unite: document.getElementById("i_unite").value || null,
+      categorie: document.getElementById("i_categorie").value || "Autre",
+      magasin: document.getElementById("i_magasin").value.trim(),
+      note: document.getElementById("i_note").value.trim(),
+      prioritaire: document.getElementById("i_prioritaire").checked,
+      modifieLe: new Date().toISOString()
+    });
+    showToast("Article mis à jour ! 📝");
+    closeItemForm();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur Firestore lors de l'enregistrement.");
+  }
+});
+
+/* ============================================================
+   MODULE : PROJETS
+   Intégration complète de l'ancien "carnet à idées créatives" dans
+   Bei Family. Utilise EXCLUSIVEMENT la collection Firestore existante
+   "idees" — aucune nouvelle collection, aucune donnée perdue.
+   ============================================================ */
+
+/* ---- score de priorité : logique reprise à l'identique de l'ancienne app ---- */
+function computeProjectScore(data){
+  const cout = Number(data.cout) || 0;
+  let coutScore = 10 - (cout / 150);
+  coutScore = Math.max(0, Math.min(10, coutScore));
+
+  const tempsMap = { heures:10, jours:7.5, semaines:4.5, mois:1.5 };
+  const tempsScore = tempsMap[data.temps] ?? 5;
+
+  const enthu = Number(data.enthousiasme) || 5;
+  const utilite = Number(data.utilite) || 5;
+  const urgence = Number(data.urgence) || 5;
+
+  let base = (coutScore*1 + tempsScore*1 + enthu*1.4 + utilite*1.3 + urgence*0.8) / 5.5;
+
+  let bonus = 0;
+  if(data.survie === "oui") bonus += 0.6;
+  if(data.survie === "non") bonus -= 0.8;
+  if(data.type23h === "23h") bonus -= 1.2;
+  if(data.type23h === "vraie") bonus += 0.6;
+  if(data.pinterest === "perdu") bonus -= 0.5;
+
+  let total = base + bonus;
+  total = Math.max(0, Math.min(10, total));
+  return Math.round(total * 10) / 10;
+}
+function scoreCategoryProject(score){
+  if(score >= 7.5) return { key:"green",  css:"sc-green",  label:"🟢 À faire tout de suite !", sub:"On fonce, cette idée a tout pour elle." };
+  if(score >= 5.5) return { key:"yellow", css:"sc-yellow", label:"🟡 Très chouette... mais on finit déjà les autres projets 😄", sub:"On la garde précieusement pour bientôt." };
+  if(score >= 3.5) return { key:"orange", css:"sc-orange", label:"🟠 À revoir plus tard.", sub:"Pas maintenant, mais on n'oublie rien." };
+  return { key:"red", css:"sc-red", label:"🔴 On en reparle après les vacances...", sub:"Elle mijote encore un peu, et c'est très bien ainsi." };
+}
+
+/* ---- normalisation : tolère les anciens documents incomplets ----
+   Utilisée UNIQUEMENT pour l'affichage — ne réécrit jamais Firestore. */
+function normalizeProjectData(raw){
+  const d = raw || {};
+  const checklist = Array.isArray(d.checklist) ? d.checklist : [];
+  const dates = Array.isArray(d.dates) ? d.dates : [];
+  const score = (typeof d.score === "number") ? d.score : computeProjectScore(d);
+  return {
+    nom: d.nom || "Projet sans nom",
+    description: d.description || "",
+    envie: d.envie || "",
+    cout: d.cout ?? null,
+    temps: d.temps || "heures",
+    qui: d.qui || "",
+    date: d.date || "",
+    enthousiasme: d.enthousiasme ?? 5,
+    utilite: d.utilite ?? 5,
+    urgence: d.urgence ?? 5,
+    survie: d.survie ?? null,
+    type23h: d.type23h ?? null,
+    david: d.david ?? null,
+    pinterest: d.pinterest ?? null,
+    // Photos conservées en base64 dans Firestore pour l'instant (compatibilité
+    // avec les fiches existantes). Une migration vers Firebase Storage pourra
+    // être envisagée plus tard si le volume de photos grossit ; la compression
+    // côté client ci-dessous reste nécessaire pour rester sous la limite 1 Mo/document.
+    photo: d.photo || null,
+    score,
+    status: d.status || "En attente",
+    checklist,
+    dates,
+    notes: d.notes || "",
+    createdAt: d.createdAt || null
+  };
+}
+function tempsLabelProject(t){
+  return { heures:"Quelques heures", jours:"Quelques jours", semaines:"Quelques semaines", mois:"Quelques mois" }[t] || "—";
+}
+function statusBadgeClassProject(status){
+  return { "En attente":"attente", "En cours":"cours", "Terminé":"termine", "Abandonné":"abandonne" }[status] || "attente";
+}
+function statusEmojiProject(status){
+  return { "En attente":"🕒", "En cours":"🚧", "Terminé":"✅", "Abandonné":"🗃️" }[status] || "🕒";
+}
+
+/* ---- état du module ---- */
+let projects = [];
+let unsubscribeProjects = null;
+let projectsFilter = "Toutes";
+let editingProjectId = null;
+let currentProjectDetailId = null;
+let selectedProjectHumor = {};
+let previousProjectStatusById = new Map(); // pour ne déclencher les confettis qu'à un vrai changement
+
+/* ---- synchronisation Firestore (collection "idees") ---- */
+function startProjectsSync(){
+  if(unsubscribeProjects) return;
+  unsubscribeProjects = onSnapshot(ideasCollectionRef, (snapshot)=>{
+    const fresh = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    // Détecte un passage à "Terminé" (jamais au tout premier chargement).
+    if(previousProjectStatusById.size > 0){
+      fresh.forEach(p=>{
+        const prevStatus = previousProjectStatusById.get(p.id);
+        const newStatus = p.status || "En attente";
+        if(prevStatus && prevStatus !== "Terminé" && newStatus === "Terminé"){
+          celebrateProjectCompletion();
+        }
+      });
+    }
+    previousProjectStatusById = new Map(fresh.map(p => [p.id, p.status || "En attente"]));
+
+    projects = fresh;
+    renderProjectsGrid();
+    renderProjectsOnDashboard();
+    if(projectDetailBackdrop.classList.contains("open") && currentProjectDetailId){
+      const stillExists = projects.find(p => p.id === currentProjectDetailId);
+      if(stillExists) renderProjectDetailBody(stillExists);
+      else closeProjectDetail();
+    }
+  }, (error)=>{
+    console.error("Erreur Firestore (projets) :", error);
+    showToast("⚠️ Impossible de charger les projets.");
+  });
+}
+function stopProjectsSync(){
+  if(unsubscribeProjects){ unsubscribeProjects(); unsubscribeProjects = null; }
+  projects = [];
+  previousProjectStatusById = new Map();
+  const el = document.getElementById("sumProjets");
+  if(el) el.textContent = "…";
+}
+
+/* ---- tableau de bord ---- */
+function renderProjectsOnDashboard(){
+  const el = document.getElementById("sumProjets");
+  if(!el) return;
+  const enCours = projects.filter(p => (p.status||"En attente") === "En cours");
+  const count = enCours.length;
+  let topProjectHtml = "";
+  if(enCours.length > 0){
+    const top = [...enCours].sort((a,b)=>{
+      const na = normalizeProjectData(a), nb = normalizeProjectData(b);
+      return (nb.score||0) - (na.score||0);
+    })[0];
+    const n = normalizeProjectData(top);
+    topProjectHtml = `<span style="display:block; font-weight:600; font-size:0.85rem; margin-top:2px;">🏆 ${escapeHtml(n.nom)} · ${n.score}/10</span>`;
+  }
+  el.innerHTML = `<span style="display:block;">${count} projet${count>1?"s":""} en cours</span>${topProjectHtml}`;
+}
+
+/* ---- tri et rendu de la grille ---- */
+function sortProjectsList(list){
+  const order = { "En cours":0, "En attente":1, "Terminé":2, "Abandonné":3 };
+  return [...list].sort((a,b)=>{
+    const na = normalizeProjectData(a), nb = normalizeProjectData(b);
+    const oa = order[na.status] ?? 4;
+    const ob = order[nb.status] ?? 4;
+    if(oa !== ob) return oa - ob;
+    return (nb.score||0) - (na.score||0);
+  });
+}
+document.querySelectorAll("#projectsFilterBar .toggle-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    projectsFilter = btn.dataset.filter;
+    document.querySelectorAll("#projectsFilterBar .toggle-btn").forEach(b => b.classList.toggle("active", b===btn));
+    renderProjectsGrid();
+  });
+});
+
+function renderProjectsGrid(){
+  const grid = document.getElementById("projectsGrid");
+  const emptyState = document.getElementById("projectsEmptyState");
+  const filtered = projectsFilter === "Toutes" ? projects : projects.filter(p => (p.status||"En attente") === projectsFilter);
+  const sorted = sortProjectsList(filtered);
+
+  const total = projects.length;
+  const enAttente = projects.filter(p => (p.status||"En attente")==="En attente").length;
+  const enCours = projects.filter(p => p.status==="En cours").length;
+  const termines = projects.filter(p => p.status==="Terminé").length;
+  document.getElementById("projectsSummary").innerHTML = `
+    <span>💡 <b>${total}</b> au total</span>
+    <span>🕒 <b>${enAttente}</b> en attente</span>
+    <span>🚧 <b>${enCours}</b> en cours</span>
+    <span>✅ <b>${termines}</b> terminé${termines>1?"s":""}</span>
+  `;
+
+  emptyState.style.display = total === 0 ? "block" : "none";
+  if(total > 0 && sorted.length === 0){
+    grid.innerHTML = `<div class="empty-courses" style="grid-column:1/-1;">Aucun projet dans cette catégorie pour l'instant.</div>`;
+    return;
+  }
+  grid.innerHTML = sorted.map(renderProjectCardHtml).join("");
+  grid.querySelectorAll("[data-project-id]").forEach(card=>{
+    card.addEventListener("click", ()=> openProjectDetail(card.dataset.projectId));
+  });
+}
+function renderProjectCardHtml(raw){
+  const p = normalizeProjectData(raw);
+  const cat = scoreCategoryProject(p.score);
+  const checklistDone = p.checklist.filter(c=>c.done).length;
+  const checklistTotal = p.checklist.length;
+  return `
+    <div class="project-card" data-project-id="${raw.id}">
+      <div class="project-card-top">
+        <div class="project-card-title">${escapeHtml(p.nom)}</div>
+        <span class="status-badge ${statusBadgeClassProject(p.status)}">${statusEmojiProject(p.status)} ${p.status}</span>
+      </div>
+      <div class="priority-tag p-${cat.key}">${cat.label}</div>
+      <div class="project-card-desc">${escapeHtml(p.description || "Pas encore de description.")}</div>
+      <div class="enthu-bar">
+        <span>🔥</span>
+        <div class="enthu-track"><div class="enthu-fill" style="width:${(p.enthousiasme||0)*10}%"></div></div>
+        <span style="font-size:0.78rem; color:var(--ink-soft);">${p.enthousiasme}/10</span>
+      </div>
+      ${checklistTotal>0 ? `
+      <div class="checklist-progress-row">
+        <span>✅ ${checklistDone}/${checklistTotal}</span>
+        <div class="checklist-progress-track"><div class="checklist-progress-fill" style="width:${Math.round(checklistDone/checklistTotal*100)}%"></div></div>
+      </div>` : ""}
+      <div class="project-card-meta">
+        <span>💶 ${p.cout ? p.cout+" €" : "—"}</span>
+        <span>📅 ${p.date || "—"}</span>
+      </div>
+    </div>
+  `;
+}
+
+/* ---- formulaire : créer / modifier ---- */
+const projectFormBackdrop = document.getElementById("projectFormBackdrop");
+const projectForm = document.getElementById("projectForm");
+
+function resetProjectForm(){
+  projectForm.reset();
+  document.getElementById("f_enthu").value = 6;
+  document.getElementById("f_utilite").value = 6;
+  document.getElementById("f_urgence").value = 5;
+  document.getElementById("f_date").value = toDateKey(new Date());
+  document.getElementById("photoPreview").style.display = "none";
+  document.getElementById("photoPreview").src = "";
+  document.getElementById("projectScorePreview").style.display = "none";
+  selectedProjectHumor = {};
+  document.querySelectorAll("#projectForm .choice-btn").forEach(b => b.classList.remove("selected"));
+  updateProjectSliderEmojis();
+  editingProjectId = null;
+}
+function openNewProjectForm(){
+  resetProjectForm();
+  document.getElementById("projectFormTitle").textContent = "💡 Nouveau projet";
+  projectFormBackdrop.classList.add("open");
+}
+function openEditProjectForm(raw){
+  resetProjectForm();
+  const p = normalizeProjectData(raw);
+  editingProjectId = raw.id;
+  document.getElementById("projectFormTitle").textContent = "✏️ Modifier le projet";
+  document.getElementById("f_nom").value = p.nom;
+  document.getElementById("f_desc").value = p.description;
+  document.getElementById("f_envie").value = p.envie;
+  document.getElementById("f_cout").value = p.cout ?? "";
+  document.getElementById("f_temps").value = p.temps;
+  document.getElementById("f_qui").value = p.qui;
+  document.getElementById("f_date").value = p.date || toDateKey(new Date());
+  document.getElementById("f_enthu").value = p.enthousiasme;
+  document.getElementById("f_utilite").value = p.utilite;
+  document.getElementById("f_urgence").value = p.urgence;
+  if(p.photo){
+    document.getElementById("photoPreview").src = p.photo;
+    document.getElementById("photoPreview").style.display = "block";
+  }
+  selectedProjectHumor = { survie:p.survie, type23h:p.type23h, david:p.david, pinterest:p.pinterest };
+  document.querySelectorAll("#projectForm .choice-btn").forEach(b=>{
+    const group = b.parentElement.dataset.group;
+    if(selectedProjectHumor[group] === b.dataset.value) b.classList.add("selected");
+  });
+  updateProjectSliderEmojis();
+  projectFormBackdrop.classList.add("open");
+}
+document.getElementById("btnNewProject").addEventListener("click", openNewProjectForm);
+document.getElementById("closeProjectForm").addEventListener("click", ()=> projectFormBackdrop.classList.remove("open"));
+document.getElementById("cancelProjectForm").addEventListener("click", ()=> projectFormBackdrop.classList.remove("open"));
+projectFormBackdrop.addEventListener("click", (e)=>{ if(e.target===projectFormBackdrop) projectFormBackdrop.classList.remove("open"); });
+
+document.querySelectorAll("#projectForm .choice-btns").forEach(group=>{
+  group.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".choice-btn");
+    if(!btn) return;
+    const groupName = group.dataset.group;
+    group.querySelectorAll(".choice-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedProjectHumor[groupName] = btn.dataset.value;
+    updateProjectScorePreview();
+  });
+});
+
+const projectSliderEmojis = {
+  enthu: ["😴","😐","🙂","😊","😄","😁","🤩","🔥","🚀","🎆"],
+  util:  ["🤷","🌱","🌱","🌿","🌿","🌳","🌳","💎","💎","🏆"],
+  urg:   ["🧊","🧊","⏳","⏳","⏳","⏰","⏰","🚨","🚨","🚨"]
+};
+function updateProjectSliderEmojis(){
+  const e = document.getElementById("f_enthu").value;
+  const u = document.getElementById("f_utilite").value;
+  const g = document.getElementById("f_urgence").value;
+  document.getElementById("enthuEmoji").textContent = projectSliderEmojis.enthu[e-1];
+  document.getElementById("utilEmoji").textContent = projectSliderEmojis.util[u-1];
+  document.getElementById("urgEmoji").textContent = projectSliderEmojis.urg[g-1];
+  document.getElementById("enthuVal").textContent = e;
+  document.getElementById("utilVal").textContent = u;
+  document.getElementById("urgVal").textContent = g;
+}
+["f_enthu","f_utilite","f_urgence"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", ()=>{ updateProjectSliderEmojis(); updateProjectScorePreview(); });
+});
+
+// Photo compressée côté navigateur avant stockage en base64 dans Firestore
+// (limite de 1 Mo par document). Voir remarque de migration Firebase Storage plus haut.
+const projectPhotoZone = document.getElementById("photoZone");
+const projectPhotoInput = document.getElementById("f_photo");
+const projectPhotoPreview = document.getElementById("photoPreview");
+projectPhotoZone.addEventListener("click", ()=> projectPhotoInput.click());
+projectPhotoInput.addEventListener("change", ()=>{
+  const file = projectPhotoInput.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const MAX_WIDTH = 900;
+      const scale = Math.min(1, MAX_WIDTH / img.width);
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      projectPhotoPreview.src = canvas.toDataURL("image/jpeg", 0.75);
+      projectPhotoPreview.style.display = "block";
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function gatherProjectFormData(){
+  return {
+    nom: document.getElementById("f_nom").value.trim(),
+    description: document.getElementById("f_desc").value.trim(),
+    envie: document.getElementById("f_envie").value.trim(),
+    cout: document.getElementById("f_cout").value === "" ? null : Number(document.getElementById("f_cout").value),
+    temps: document.getElementById("f_temps").value,
+    qui: document.getElementById("f_qui").value.trim(),
+    date: document.getElementById("f_date").value,
+    enthousiasme: Number(document.getElementById("f_enthu").value),
+    utilite: Number(document.getElementById("f_utilite").value),
+    urgence: Number(document.getElementById("f_urgence").value),
+    survie: selectedProjectHumor.survie ?? null,
+    type23h: selectedProjectHumor.type23h ?? null,
+    david: selectedProjectHumor.david ?? null,
+    pinterest: selectedProjectHumor.pinterest ?? null,
+    photo: (projectPhotoPreview.style.display !== "none" && projectPhotoPreview.src) ? projectPhotoPreview.src : null
+  };
+}
+function updateProjectScorePreview(){
+  const data = gatherProjectFormData();
+  const score = computeProjectScore(data);
+  const cat = scoreCategoryProject(score);
+  const panel = document.getElementById("projectScorePreview");
+  panel.style.display = "block";
+  panel.className = "score-panel " + cat.css;
+  panel.innerHTML = `Score de priorité : ${score}/10<span class="sub">${cat.label}<br>${cat.sub}</span>`;
+}
+
+projectForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const data = gatherProjectFormData();
+  if(!data.nom){ alert("Un petit nom pour l'idée, s'il vous plaît ! 😊"); return; }
+  const score = computeProjectScore(data);
+
+  try{
+    if(editingProjectId){
+      await updateDoc(doc(db, "idees", editingProjectId), { ...data, score });
+      showToast("Fiche mise à jour ! 📝");
+    } else {
+      await addDoc(ideasCollectionRef, {
+        ...data,
+        score,
+        status: "En attente",
+        checklist: [],
+        dates: [],
+        notes: "",
+        createdAt: new Date().toISOString()
+      });
+      showToast("Nouvelle idée capturée avec succès ! ✨");
+    }
+    projectFormBackdrop.classList.remove("open");
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur Firestore lors de l'enregistrement du projet.");
+  }
+});
+
+/* ---- détail d'un projet ---- */
+const projectDetailBackdrop = document.getElementById("projectDetailBackdrop");
+function openProjectDetail(id){
+  const raw = projects.find(p => p.id === id);
+  if(!raw) return;
+  currentProjectDetailId = id;
+  renderProjectDetailBody(raw);
+  projectDetailBackdrop.classList.add("open");
+}
+function closeProjectDetail(){
+  projectDetailBackdrop.classList.remove("open");
+  currentProjectDetailId = null;
+}
+function renderProjectDetailBody(raw){
+  const p = normalizeProjectData(raw);
+  document.getElementById("projectDetailTitle").textContent = p.nom;
+
+  const cat = scoreCategoryProject(p.score);
+  const panel = document.getElementById("projectDetailScorePanel");
+  panel.className = "score-panel " + cat.css;
+  panel.innerHTML = `Score de priorité : ${p.score}/10<span class="sub">${cat.label}<br>${cat.sub}</span>`;
+
+  document.getElementById("projectDetailMetaGrid").innerHTML = `
+    <div><b>💶 ${p.cout ? p.cout+" €" : "—"}</b>Coût estimé</div>
+    <div><b>⏱️ ${tempsLabelProject(p.temps)}</b>Temps estimé</div>
+    <div><b>🔥 ${p.enthousiasme}/10</b>Enthousiasme</div>
+    <div><b>👥 ${escapeHtml(p.qui || "—")}</b>Concerné(s)</div>
+    <div><b>📅 ${p.date || "—"}</b>Date d'encodage</div>
+    <div><b>💬 ${escapeHtml(p.envie || "—")}</b>Pourquoi cette envie</div>
+  `;
+
+  document.querySelectorAll("#projectStatusRow .status-btn").forEach(b=>{
+    b.classList.remove("active-attente","active-cours","active-termine","active-abandonne");
+    if(b.dataset.status === p.status){
+      const map = { "En attente":"active-attente", "En cours":"active-cours", "Terminé":"active-termine", "Abandonné":"active-abandonne" };
+      b.classList.add(map[p.status]);
+    }
+  });
+
+  renderProjectChecklist(p.checklist);
+  renderProjectDates(p.dates);
+  document.getElementById("projectNotesBox").value = p.notes;
+}
+
+document.getElementById("closeProjectDetail").addEventListener("click", async ()=>{
+  const raw = projects.find(pr => pr.id === currentProjectDetailId);
+  const newNotes = document.getElementById("projectNotesBox").value;
+  closeProjectDetail();
+  if(raw && newNotes !== (raw.notes||"")){
+    try{ await updateDoc(doc(db, "idees", raw.id), { notes:newNotes }); }
+    catch(err){ console.error(err); }
+  }
+});
+projectDetailBackdrop.addEventListener("click", (e)=>{ if(e.target===projectDetailBackdrop) document.getElementById("closeProjectDetail").click(); });
+
+document.getElementById("projectStatusRow").addEventListener("click", async (e)=>{
+  const btn = e.target.closest(".status-btn");
+  if(!btn || !currentProjectDetailId) return;
+  try{
+    await updateDoc(doc(db, "idees", currentProjectDetailId), { status: btn.dataset.status });
+    // Les confettis sont gérés par startProjectsSync() à la réception du changement,
+    // pas ici, pour rester cohérent même si le changement vient de l'autre appareil.
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors du changement de statut.");
+  }
+});
+
+document.getElementById("saveProjectDetailBtn").addEventListener("click", async ()=>{
+  if(!currentProjectDetailId) return;
+  try{
+    await updateDoc(doc(db, "idees", currentProjectDetailId), { notes: document.getElementById("projectNotesBox").value });
+    showToast("Fiche enregistrée ! 💾");
+    closeProjectDetail();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de l'enregistrement.");
+  }
+});
+
+document.getElementById("editProjectBtn").addEventListener("click", ()=>{
+  const raw = projects.find(p => p.id === currentProjectDetailId);
+  if(!raw) return;
+  closeProjectDetail();
+  openEditProjectForm(raw);
+});
+
+document.getElementById("deleteProjectBtn").addEventListener("click", async ()=>{
+  if(!currentProjectDetailId) return;
+  if(!confirm("Supprimer définitivement cette idée du carnet ?")) return;
+  try{
+    await deleteDoc(doc(db, "idees", currentProjectDetailId));
+    showToast("Idée supprimée. Place à la suivante ! 👋");
+    closeProjectDetail();
+  }catch(err){
+    console.error(err);
+    showToast("⚠️ Erreur lors de la suppression.");
+  }
+});
+
+/* ---- checklist ---- */
+function renderProjectChecklist(checklist){
+  const wrap = document.getElementById("projectChecklistItems");
+  wrap.innerHTML = "";
+  checklist.forEach((item, idx)=>{
+    const row = document.createElement("div");
+    row.className = "checklist-item";
+    row.innerHTML = `
+      <input type="checkbox" ${item.done?"checked":""} data-idx="${idx}">
+      <span class="${item.done?'done':''}">${escapeHtml(item.text)}</span>
+      <button type="button" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--ink-soft);" data-remove="${idx}">✕</button>
+    `;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll("input[type=checkbox]").forEach(cb=>{
+    cb.addEventListener("change", async ()=>{
+      const raw = projects.find(p => p.id === currentProjectDetailId);
+      if(!raw) return;
+      const list = (raw.checklist||[]).map((it,idx)=> idx===Number(cb.dataset.idx) ? {...it, done:cb.checked} : it);
+      try{ await updateDoc(doc(db,"idees",currentProjectDetailId), { checklist:list }); }
+      catch(err){ console.error(err); showToast("⚠️ Erreur Firestore."); }
+    });
+  });
+  wrap.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const raw = projects.find(p => p.id === currentProjectDetailId);
+      if(!raw) return;
+      const list = (raw.checklist||[]).filter((_,idx)=> idx!==Number(btn.dataset.remove));
+      try{ await updateDoc(doc(db,"idees",currentProjectDetailId), { checklist:list }); }
+      catch(err){ console.error(err); showToast("⚠️ Erreur Firestore."); }
+    });
+  });
+}
+document.getElementById("addProjectChecklistBtn").addEventListener("click", async ()=>{
+  const input = document.getElementById("newProjectChecklistInput");
+  if(!input.value.trim() || !currentProjectDetailId) return;
+  const raw = projects.find(p => p.id === currentProjectDetailId);
+  const list = [...(raw?.checklist||[]), { text:input.value.trim(), done:false }];
+  input.value = "";
+  try{ await updateDoc(doc(db,"idees",currentProjectDetailId), { checklist:list }); }
+  catch(err){ console.error(err); showToast("⚠️ Erreur Firestore."); }
+});
+
+/* ---- dates importantes ----
+   Architecture prête pour qu'une date de projet apparaisse plus tard dans le
+   module Activités (même structure { label, date } que les dates d'activité). */
+function renderProjectDates(dates){
+  const wrap = document.getElementById("projectDatesItems");
+  const sorted = [...dates].sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  wrap.innerHTML = "";
+  sorted.forEach((d)=>{
+    const originalIdx = dates.indexOf(d);
+    const row = document.createElement("div");
+    row.className = "checklist-item";
+    row.innerHTML = `
+      <span>🗓️ <b>${d.date||"—"}</b> — ${escapeHtml(d.label)}</span>
+      <button type="button" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--ink-soft);" data-removedate="${originalIdx}">✕</button>
+    `;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll("[data-removedate]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const raw = projects.find(p => p.id === currentProjectDetailId);
+      if(!raw) return;
+      const list = (raw.dates||[]).filter((_,idx)=> idx!==Number(btn.dataset.removedate));
+      try{ await updateDoc(doc(db,"idees",currentProjectDetailId), { dates:list }); }
+      catch(err){ console.error(err); showToast("⚠️ Erreur Firestore."); }
+    });
+  });
+}
+document.getElementById("addProjectDateBtn").addEventListener("click", async ()=>{
+  const label = document.getElementById("newProjectDateLabel");
+  const value = document.getElementById("newProjectDateValue");
+  if(!value.value || !currentProjectDetailId) return;
+  const raw = projects.find(p => p.id === currentProjectDetailId);
+  const list = [...(raw?.dates||[]), { label: label.value.trim() || "Étape", date: value.value }];
+  label.value = ""; value.value = "";
+  try{ await updateDoc(doc(db,"idees",currentProjectDetailId), { dates:list }); }
+  catch(err){ console.error(err); showToast("⚠️ Erreur Firestore."); }
+});
+
+/* ---- confettis ---- */
+const funnyProjectMessages = [
+  "Incroyable ! Une idée est réellement arrivée jusqu'au bout ! 🎉",
+  "David est fier de toi. Enfin... surtout soulagé 😄",
+  "Une idée de plus qui quitte le tiroir pour de bon ! 🏆",
+  "Alerte miracle : projet terminé ET dans les temps (presque) ! 🥳",
+  "Chapeau ! On célèbre, on prend une photo, et on recommence ! 📸"
+];
+function celebrateProjectCompletion(){
+  showToast(funnyProjectMessages[Math.floor(Math.random()*funnyProjectMessages.length)]);
+  launchProjectConfetti();
+}
+const confettiCanvas = document.getElementById("confetti-canvas");
+const confettiCtx = confettiCanvas.getContext("2d");
+function resizeConfettiCanvas(){ confettiCanvas.width = window.innerWidth; confettiCanvas.height = window.innerHeight; }
+window.addEventListener("resize", resizeConfettiCanvas);
+resizeConfettiCanvas();
+function launchProjectConfetti(){
+  const colors = ["#FF8C6B","#F4C95D","#8FAE8B","#C9AEE4","#9AC7D9"];
+  const pieces = [];
+  for(let i=0;i<140;i++){
+    pieces.push({
+      x: Math.random()*confettiCanvas.width, y: -20 - Math.random()*200,
+      w: 6+Math.random()*6, h: 8+Math.random()*10,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speedY: 2+Math.random()*3, speedX: -1.5+Math.random()*3,
+      rot: Math.random()*360, rotSpeed: -6+Math.random()*12
+    });
+  }
+  let frame = 0;
+  function animate(){
+    confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+    pieces.forEach(p=>{
+      p.x += p.speedX; p.y += p.speedY; p.rot += p.rotSpeed;
+      confettiCtx.save();
+      confettiCtx.translate(p.x, p.y);
+      confettiCtx.rotate(p.rot*Math.PI/180);
+      confettiCtx.fillStyle = p.color;
+      confettiCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      confettiCtx.restore();
+    });
+    frame++;
+    if(frame < 220) requestAnimationFrame(animate);
+    else confettiCtx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+  }
+  animate();
+}
+
+/* ---- export JSON / CSV / PDF individuel ---- */
+document.getElementById("btnExportProjectsJson").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(projects, null, 2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `nos-projets-${toDateKey(new Date())}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast("Export JSON prêt ! 📦");
+});
+
+document.getElementById("btnImportProjectsJson").addEventListener("click", ()=> document.getElementById("projectsFileImport").click());
+document.getElementById("projectsFileImport").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    try{
+      const imported = JSON.parse(reader.result);
+      if(!Array.isArray(imported)) throw new Error("Format invalide");
+      const ok = confirm(
+        `⚠️ Import de ${imported.length} projet(s).\n\n` +
+        `Ceci va REMPLACER TOUS les projets actuels dans Firestore, sur TOUS les appareils connectés (David et Pauline). ` +
+        `Cette action est irréversible.\n\nContinuer ?`
+      );
+      if(!ok) return;
+      const batch = writeBatch(db);
+      projects.forEach(p => batch.delete(doc(db, "idees", p.id)));
+      imported.forEach(p => {
+        const { id, ...rest } = p;
+        batch.set(doc(ideasCollectionRef), rest);
+      });
+      await batch.commit();
+      showToast("Import réussi ! 🎊");
+    }catch(err){
+      console.error(err);
+      alert("Ce fichier ne ressemble pas à un export valide, ou une erreur Firestore est survenue. 😕");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+document.getElementById("btnExportProjectsCsv").addEventListener("click", ()=>{
+  const headers = ["Nom","Statut","Priorité (score)","Coût (€)","Temps estimé","Enthousiasme","Qui est concerné","Date d'encodage","Description"];
+  const rows = projects.map(raw=>{
+    const p = normalizeProjectData(raw);
+    return [p.nom, p.status, p.score, p.cout, tempsLabelProject(p.temps), p.enthousiasme, p.qui, p.date, p.description];
+  });
+  const csvEscapeCell = (val)=> `"${(val ?? "").toString().replace(/"/g,'""')}"`;
+  const csvContent = [headers, ...rows].map(row => row.map(csvEscapeCell).join(";")).join("\r\n");
+  const blob = new Blob(["\uFEFF"+csvContent], { type:"text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `nos-projets-${toDateKey(new Date())}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast("Export Excel (.csv) prêt ! 📊");
+});
+
+function buildProjectPrintBlock(raw){
+  const p = normalizeProjectData(raw);
+  const cat = scoreCategoryProject(p.score);
+  const checklist = p.checklist.map(it => `<li class="${it.done?'done':''}">${it.done?'☑':'☐'} ${escapeHtml(it.text)}</li>`).join("");
+  return `
+    <div class="print-project">
+      <h2>${escapeHtml(p.nom)}</h2>
+      ${p.photo ? `<img class="print-photo" src="${p.photo}" alt="Photo du projet">` : ""}
+      <div class="print-priority">${cat.label} <span style="font-weight:400;">(score ${p.score}/10)</span></div>
+      <div class="print-meta">
+        <span>💶 ${p.cout ? p.cout+" €" : "—"}</span>
+        <span>⏱️ ${tempsLabelProject(p.temps)}</span>
+        <span>🔥 Enthousiasme : ${p.enthousiasme}/10</span>
+        <span>👥 ${escapeHtml(p.qui || "—")}</span>
+        <span>📅 ${p.date || "—"}</span>
+      </div>
+      ${p.description ? `<div class="print-block"><b>Description</b>${escapeHtml(p.description)}</div>` : ""}
+      ${p.envie ? `<div class="print-block"><b>Pourquoi cette envie</b>${escapeHtml(p.envie)}</div>` : ""}
+      ${checklist ? `<div class="print-block"><b>Checklist</b><ul class="print-checklist">${checklist}</ul></div>` : ""}
+      ${p.notes ? `<div class="print-block"><b>Notes</b>${escapeHtml(p.notes)}</div>` : ""}
+    </div>
+  `;
+}
+function fitPrintAreaToOnePage(){
+  const printArea = document.getElementById("printArea");
+  printArea.style.transform = "none";
+  printArea.style.width = "100%";
+  const pxPerMm = 96/25.4;
+  const pageHeightPx = (297 - 24) * pxPerMm;
+  const contentHeight = printArea.scrollHeight;
+  if(contentHeight > pageHeightPx){
+    const scale = pageHeightPx / contentHeight;
+    printArea.style.transform = `scale(${scale})`;
+    printArea.style.width = (100/scale) + "%";
+  }
+}
+document.getElementById("exportProjectPdfBtn").addEventListener("click", ()=>{
+  const raw = projects.find(p => p.id === currentProjectDetailId);
+  if(!raw) return;
+  const printArea = document.getElementById("printArea");
+  const dateStr = new Date().toLocaleDateString("fr-BE", { day:"numeric", month:"long", year:"numeric" });
+  printArea.innerHTML = `
+    <div class="print-report-header">
+      <h1>💡 ${escapeHtml(normalizeProjectData(raw).nom)}</h1>
+      <p>Exporté le ${dateStr}</p>
+    </div>
+    ${buildProjectPrintBlock(raw)}
+  `;
+  const img = printArea.querySelector(".print-photo");
+  const ready = img && !img.complete
+    ? new Promise(resolve=>{ img.onload = resolve; img.onerror = resolve; })
+    : Promise.resolve();
+  ready.then(()=>{
+    requestAnimationFrame(()=>{
+      fitPrintAreaToOnePage();
+      setTimeout(()=> window.print(), 60);
+    });
+  });
+});
+
+/* ============================================================
+   AUTHENTIFICATION — connexion Google, accès restreint
+   ============================================================ */
+const authScreen = document.getElementById("authScreen");
+const authMessage = document.getElementById("authMessage");
+const appShell = document.getElementById("appShell");
+const userBar = document.getElementById("userBar");
+const userEmail = document.getElementById("userEmail");
+
+document.getElementById("btnGoogleLogin").addEventListener("click", async ()=>{
+  authMessage.textContent = "";
+  try{
+    await signInWithPopup(auth, googleProvider);
+  }catch(err){
+    console.error(err);
+    authMessage.textContent = "La connexion a échoué. Merci de réessayer.";
+  }
+});
+
+document.getElementById("btnLogout").addEventListener("click", async ()=>{
+  try{ await signOut(auth); }catch(err){ console.error(err); }
+});
+
+onAuthStateChanged(auth, (user)=>{
+  if(!user){
+    stopProjectsSync();
+    stopMenusSync();
+    stopActivitesSync();
+    stopCoursesSync();
+    appShell.style.display = "none";
+    userBar.style.display = "none";
+    authScreen.style.display = "flex";
+    authMessage.textContent = "";
+    return;
+  }
+
+  const emailOk = !!user.email && AUTHORIZED_EMAILS.includes(user.email);
+  if(!emailOk){
+    stopProjectsSync();
+    stopMenusSync();
+    stopActivitesSync();
+    stopCoursesSync();
+    appShell.style.display = "none";
+    userBar.style.display = "none";
+    authScreen.style.display = "flex";
+    authMessage.textContent = "Ce compte n'est pas autorisé";
+    signOut(auth);
+    return;
+  }
+
+  authScreen.style.display = "none";
+  authMessage.textContent = "";
+  userEmail.textContent = user.email;
+  userBar.style.display = "flex";
+  appShell.style.display = "block";
+
+  const firstName = (user.displayName || "").split(" ")[0];
+  document.getElementById("greeting").textContent = firstName ? `Bonjour, ${firstName} !` : "Bonjour !";
+
+  showView("home");
+  renderTodayHeader();
+  startProjectsSync();
+  renderDaysGrid();
+  startMenusSync();
+  startActivitesSync();
+  startCoursesSync();
+});
+
+/* ============================================================
+   TOAST — petit message de confirmation, réutilisable par
+   les futurs modules
+   ============================================================ */
+let toastTimer = null;
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toast.classList.remove("show"), 3200);
+}
+
+/* ============================================================
+   PWA — enregistrement du service worker
+   ============================================================ */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("./service-worker.js")
+      .catch((err)=> console.error("Échec de l'enregistrement du service worker :", err));
+  });
+}
+</script>
+</body>
+</html>
